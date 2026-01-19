@@ -1,0 +1,434 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // 🔧 FUNÇÕES AUXILIARES
+    // ============================================
+    
+    // Verifica se usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Verifica se é o próprio usuário
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Verifica se usuário é participante
+    function isParticipant(participants) {
+      return isAuthenticated() && request.auth.uid in participants;
+    }
+    
+    // Verifica se usuário está no array users
+    function isUserInArray(users) {
+      return isAuthenticated() && request.auth.uid in users;
+    }
+
+    // Verifica se usuário é admin (existe na coleção users_admin e está ativo)
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users_admin/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users_admin/$(request.auth.uid)).data.status == 'active';
+    }
+
+    // ============================================
+    // 👑 USERS_ADMIN (Administradores do Painel)
+    // ============================================
+    match /users_admin/{userId} {
+      // Leitura: usuário autenticado pode ler seu próprio documento
+      // OU qualquer admin ativo pode ler outros admins
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == userId || 
+         (exists(/databases/$(database)/documents/users_admin/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users_admin/$(request.auth.uid)).data.status == 'active'));
+      
+      // Criação: apenas admins ativos podem criar novos admins
+      allow create: if isAdmin();
+      
+      // Atualização: admin pode atualizar a si mesmo ou outros admins
+      allow update: if isAuthenticated() && 
+        (request.auth.uid == userId || isAdmin());
+      
+      // Deleção: apenas admins ativos
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // 🔑 RECOVERY_CODES (Códigos de recuperação de senha)
+    // ============================================
+    match /recovery_codes/{codeId} {
+      // Acesso apenas via Admin SDK (API routes)
+      allow read, write: if false;
+    }
+
+    // ============================================
+    // 👤 USERS (Usuários do App Mobile)
+    // ============================================
+    match /users/{userId} {
+      // Leitura: autenticado pode ver outros perfis
+      // Admins podem ler todos os perfis
+      allow read: if isAuthenticated();
+      
+      // Criação: apenas o próprio usuário
+      allow create: if isOwner(userId);
+      
+      // Atualização: próprio usuário OU admin pode atualizar (para moderação)
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Deleção: apenas o próprio usuário ou admin
+      allow delete: if isOwner(userId) || isAdmin();
+      
+      // Subcollection: profile_views
+      match /profile_views/{viewId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ============================================
+    // ❤️ LIKES
+    // ============================================
+    match /likes/{likeId} {
+      // Leitura: apenas envolvidos (quem deu ou recebeu)
+      allow read: if isAuthenticated() && 
+        (resource.data.fromUserId == request.auth.uid || 
+         resource.data.toUserId == request.auth.uid);
+      
+      // Criação: usuário autenticado pode dar like
+      allow create: if isAuthenticated() && 
+        request.resource.data.fromUserId == request.auth.uid;
+      
+      // Atualização: apenas quem deu o like (para marcar matchCreated)
+      allow update: if isAuthenticated() && 
+        resource.data.fromUserId == request.auth.uid;
+      
+      // Deleção: apenas quem deu o like
+      allow delete: if isAuthenticated() && 
+        resource.data.fromUserId == request.auth.uid;
+    }
+
+    // ============================================
+    // 💕 MATCHES
+    // ============================================
+    match /matches/{matchId} {
+      // Leitura: apenas participantes do match
+      allow read: if isUserInArray(resource.data.users);
+      
+      // Criação: Cloud Functions apenas (via Admin SDK)
+      allow create: if false;
+      
+      // Atualização: apenas participantes
+      allow update: if isUserInArray(resource.data.users);
+      
+      // Deleção: não permitido (usar unmatch que desativa)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 💬 CHATS
+    // ============================================
+    match /chats/{chatId} {
+      // Leitura: usuário autenticado que é participante
+      // Nota: permite leitura se o usuário está nos participantes do documento
+      allow read: if isAuthenticated() && 
+        (resource == null || request.auth.uid in resource.data.participants);
+      
+      // Criação: participante autenticado
+      allow create: if isAuthenticated() && 
+        request.auth.uid in request.resource.data.participants;
+      
+      // Atualização: apenas participantes
+      allow update: if isParticipant(resource.data.participants);
+      
+      // Deleção: não permitido
+      allow delete: if false;
+      
+      // Subcollection: messages
+      match /messages/{messageId} {
+        // Leitura: participantes do chat pai
+        allow read: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        
+        // Criação: participante pode enviar mensagem
+        allow create: if isAuthenticated() && 
+          request.resource.data.senderId == request.auth.uid &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        
+        // Atualização: apenas remetente (para editar/deletar) ou participante (para marcar lido)
+        allow update: if isAuthenticated() && 
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        
+        // Deleção: apenas remetente
+        allow delete: if isAuthenticated() && 
+          resource.data.senderId == request.auth.uid;
+      }
+    }
+
+    // ============================================
+    // 🔔 NOTIFICATIONS
+    // ============================================
+    match /notifications/{notificationId} {
+      // Leitura: apenas o destinatário
+      allow read: if isOwner(resource.data.userId);
+      
+      // Criação: Cloud Functions apenas
+      allow create: if false;
+      
+      // Atualização: apenas o destinatário (para marcar como lido)
+      allow update: if isOwner(resource.data.userId);
+      
+      // Deleção: apenas o destinatário
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ============================================
+    // 💳 PAYMENTS
+    // ============================================
+    match /payments/{paymentId} {
+      // Leitura: apenas o usuário que fez o pagamento ou admin
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Criação: usuário autenticado pode criar seu próprio pagamento
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Atualização: próprio usuário (para adicionar subscriptionId) ou admin
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Deleção: não permitido
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 💎 SUBSCRIPTIONS (Assinaturas Premium/Network)
+    // ============================================
+    match /subscriptions/{subscriptionId} {
+      // Leitura: apenas o dono da assinatura
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Criação: usuário autenticado pode criar sua própria assinatura
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Atualização: apenas o dono (para cancelar, etc)
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Deleção: não permitido (manter histórico)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 🌾 NETWORK CONNECTIONS
+    // ============================================
+    match /network_connections/{connectionId} {
+      // Leitura: apenas envolvidos
+      allow read: if isAuthenticated() && 
+        (resource.data.fromUserId == request.auth.uid || 
+         resource.data.toUserId == request.auth.uid);
+      
+      // Criação: usuário autenticado
+      allow create: if isAuthenticated() && 
+        request.resource.data.fromUserId == request.auth.uid;
+      
+      // Atualização: apenas envolvidos
+      allow update: if isAuthenticated() && 
+        (resource.data.fromUserId == request.auth.uid || 
+         resource.data.toUserId == request.auth.uid);
+      
+      // Deleção: apenas quem criou
+      allow delete: if isAuthenticated() && 
+        resource.data.fromUserId == request.auth.uid;
+    }
+
+    // ============================================
+    // 📧 EMAIL VERIFICATIONS
+    // ============================================
+    match /email_verifications/{verificationId} {
+      // Acesso total via Cloud Functions (Admin SDK)
+      // Usuários não têm acesso direto
+      allow read, write: if false;
+    }
+
+    // ============================================
+    // 🎉 EVENTS
+    // ============================================
+    match /events/{eventId} {
+      // Leitura: qualquer usuário autenticado
+      allow read: if isAuthenticated();
+      
+      // Criação: usuário autenticado (produtor)
+      allow create: if isAuthenticated() && 
+        request.resource.data.producerId == request.auth.uid;
+      
+      // Atualização: apenas criador do evento
+      allow update: if isAuthenticated() && 
+        resource.data.producerId == request.auth.uid;
+      
+      // Deleção: apenas criador do evento
+      allow delete: if isAuthenticated() && 
+        resource.data.producerId == request.auth.uid;
+    }
+
+    // ============================================
+    // 💳 PAYMENTS_EVENT (Pagamentos de Eventos)
+    // ============================================
+    match /payments_event/{paymentId} {
+      // Leitura: apenas o produtor do pagamento
+      allow read: if isAuthenticated() && 
+        resource.data.producerId == request.auth.uid;
+      
+      // Criação: usuário autenticado (produtor)
+      allow create: if isAuthenticated() && 
+        request.resource.data.producerId == request.auth.uid;
+      
+      // Atualização: não permitido (pagamentos são imutáveis)
+      allow update: if false;
+      
+      // Deleção: não permitido
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 🚫 PASSES (Rejeições temporárias)
+    // ============================================
+    match /passes/{passId} {
+      // Leitura: apenas quem deu o pass
+      allow read: if isAuthenticated() && 
+        resource.data.fromUserId == request.auth.uid;
+      
+      // Criação: usuário autenticado pode dar pass
+      allow create: if isAuthenticated() && 
+        request.resource.data.fromUserId == request.auth.uid;
+      
+      // Atualização: não permitido (passes são imutáveis)
+      allow update: if false;
+      
+      // Deleção: apenas quem deu o pass (para poder rever usuário)
+      allow delete: if isAuthenticated() && 
+        resource.data.fromUserId == request.auth.uid;
+    }
+
+    // ============================================
+    // 📮 CORREIO DA ROÇA
+    // ============================================
+    match /correio_da_roca/{correioId} {
+      // Leitura: remetente ou destinatário
+      allow read: if isAuthenticated() && 
+        (resource.data.fromUserId == request.auth.uid || 
+         resource.data.toUserId == request.auth.uid);
+      
+      // Criação: usuário autenticado pode enviar (premium feature)
+      allow create: if isAuthenticated() && 
+        request.resource.data.fromUserId == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      
+      // Atualização: apenas destinatário pode responder (aceitar/rejeitar)
+      allow update: if isAuthenticated() && 
+        resource.data.toUserId == request.auth.uid &&
+        resource.data.status == 'pending';
+      
+      // Deleção: não permitido (manter histórico)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 🛒 ITENS_AVULSO (Itens da Loja)
+    // ============================================
+    match /itens_avulso/{itemId} {
+      // Leitura: qualquer usuário autenticado pode ler (itens da loja são públicos)
+      allow read: if isAuthenticated();
+      
+      // Criação: apenas admins
+      allow create: if isAdmin();
+      
+      // Atualização: apenas admins
+      allow update: if isAdmin();
+      
+      // Deleção: apenas admins
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // 📋 PLANS (Planos de Assinatura)
+    // ============================================
+    match /plans/{planId} {
+      // Leitura: qualquer usuário autenticado pode ver os planos
+      allow read: if isAuthenticated();
+      
+      // Criação: apenas admins
+      allow create: if isAdmin();
+      
+      // Atualização: admins podem atualizar tudo
+      // Usuários autenticados podem apenas incrementar totalSubscribers
+      allow update: if isAdmin() || 
+        (isAuthenticated() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalSubscribers']));
+      
+      // Deleção: apenas admins
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // 🛍️ PURCHASES (Compras de Itens Avulsos)
+    // ============================================
+    match /purchases/{purchaseId} {
+      // Leitura: usuário que fez a compra ou admin
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Criação: usuário autenticado pode criar sua própria compra
+      // (normalmente via Cloud Functions após processamento de pagamento)
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Atualização: não permitido (compras são imutáveis)
+      allow update: if false;
+      
+      // Deleção: não permitido (manter histórico)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 📝 USER_SUBSCRIPTIONS (Assinaturas de Planos do Usuário)
+    // ============================================
+    match /user_subscriptions/{subscriptionId} {
+      // Leitura: usuário que possui a assinatura ou admin
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Criação: usuário autenticado pode criar sua própria assinatura
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Atualização: usuário pode atualizar (cancelar, etc) ou admin
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Deleção: não permitido (manter histórico)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // 🎒 USER_INVENTORY (Inventário de Itens do Usuário)
+    // ============================================
+    match /user_inventory/{userId} {
+      // Leitura: apenas o dono do inventário ou admin
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Criação: apenas o próprio usuário
+      allow create: if isOwner(userId);
+      
+      // Atualização: o próprio usuário (para usar itens) ou admin
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Deleção: não permitido
+      allow delete: if false;
+    }
+  }
+}
