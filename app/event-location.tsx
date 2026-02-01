@@ -1,7 +1,9 @@
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInventoryItemByName } from '@/firebase/planSubscriptionService';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -12,12 +14,12 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-// Mock de eventos próximos
+// Mock de eventos próximos com coordenadas
 const MOCK_EVENTS = [
   {
     id: '1',
@@ -26,6 +28,9 @@ const MOCK_EVENTS = [
     date: '15 de Dezembro',
     distance: 12,
     attendees: 245,
+    latitude: -16.6799,
+    longitude: -49.2550,
+    radius: 2, // km de raio para check-in
   },
   {
     id: '2',
@@ -34,6 +39,9 @@ const MOCK_EVENTS = [
     date: '20 de Dezembro',
     distance: 28,
     attendees: 189,
+    latitude: -16.7330,
+    longitude: -49.2690,
+    radius: 3,
   },
   {
     id: '3',
@@ -42,43 +50,174 @@ const MOCK_EVENTS = [
     date: '5 de Janeiro',
     distance: 45,
     attendees: 312,
+    latitude: -16.6868,
+    longitude: -49.2648,
+    radius: 5,
   },
 ];
 
+// Função para calcular distância em km usando Haversine
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 export default function EventLocationScreen() {
   const router = useRouter();
-  const { hasPremium } = useAuth();
+  const { hasPremium, currentUser } = useAuth();
   
   // Controle de uso dos recursos
   const [botaEventCount, setBotaEventCount] = useState(0);
   const [checkinCount, setCheckinCount] = useState(0);
+  const [confirmedEvents, setConfirmedEvents] = useState<string[]>([]);
+  const [checkedInEvents, setCheckedInEvents] = useState<string[]>([]);
+  
+  // Estado de localização
+  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
+  const [loadingLocation, setLoadingLocation] = useState(false);
   
   // Limites por plano
   const BOTA_EVENT_LIMIT = hasPremium ? -1 : 5; // -1 = ilimitado
   const CHECKIN_LIMIT = hasPremium ? -1 : 5;
-
-  const handleBotaNoEvento = (eventId: string) => {
-    if (BOTA_EVENT_LIMIT !== -1 && botaEventCount >= BOTA_EVENT_LIMIT) {
-      Alert.alert(
-        'Limite Atingido',
-        'Você atingiu o limite de "Bota no Evento" do seu plano. Deseja comprar pacotes adicionais?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Ver Pacotes', onPress: () => router.push('/store' as any) },
-        ]
-      );
-      return;
+  
+  // Obter localização do usuário
+  const getUserLocation = async (): Promise<{latitude: number; longitude: number} | null> => {
+    try {
+      setLoadingLocation(true);
+      
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permissão Necessária',
+          'Precisamos da sua localização para verificar sua presença no evento.'
+        );
+        return null;
+      }
+      
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      
+      setUserLocation(coords);
+      return coords;
+    } catch (error) {
+      console.error('Erro ao obter localização:', error);
+      Alert.alert('Erro', 'Não foi possível obter sua localização.');
+      return null;
+    } finally {
+      setLoadingLocation(false);
     }
-    
-    setBotaEventCount(botaEventCount + 1);
-    Alert.alert('Sucesso!', 'Você deu "Bota no Evento"! Outros participantes verão seu interesse.');
   };
 
-  const handleCheckinAgro = (eventId: string) => {
-    if (CHECKIN_LIMIT !== -1 && checkinCount >= CHECKIN_LIMIT) {
+  const handleBotaNoEvento = async (eventId: string) => {
+    if (!currentUser?.id) {
+      Alert.alert('Erro', 'Você precisa estar logado');
+      return;
+    }
+    
+    // Verificar se já confirmou presença
+    if (confirmedEvents.includes(eventId)) {
+      Alert.alert('Já confirmado!', 'Você já confirmou presença neste evento.');
+      return;
+    }
+    
+    // Verificar limite de uso
+    if (BOTA_EVENT_LIMIT !== -1 && botaEventCount >= BOTA_EVENT_LIMIT) {
+      // Tentar consumir do inventário
+      const consumeResult = await useInventoryItemByName(currentUser.id, 'Bota no Evento', 1);
+      if (!consumeResult.success) {
+        Alert.alert(
+          'Limite Atingido',
+          'Você atingiu o limite de "Bota no Evento" do seu plano. Deseja comprar pacotes adicionais?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Ver Pacotes', onPress: () => router.push('/store' as any) },
+          ]
+        );
+        return;
+      }
+      console.log(`✅ Bota no Evento usado do inventário! Restante: ${consumeResult.remaining}`);
+    }
+    
+    const event = MOCK_EVENTS.find(e => e.id === eventId);
+    
+    setBotaEventCount(botaEventCount + 1);
+    setConfirmedEvents([...confirmedEvents, eventId]);
+    
+    Alert.alert(
+      '🎉 Presença Confirmada!',
+      `Você confirmou presença em "${event?.name}"!\n\nVocê será notificado quando outros participantes também confirmarem.`,
+      [{ text: 'Maravilha!' }]
+    );
+  };
+
+  const handleCheckinAgro = async (eventId: string) => {
+    if (!currentUser?.id) {
+      Alert.alert('Erro', 'Você precisa estar logado');
+      return;
+    }
+    
+    // Verificar se já fez check-in
+    if (checkedInEvents.includes(eventId)) {
+      Alert.alert('Check-in já realizado!', 'Você já fez check-in neste evento.');
+      return;
+    }
+    
+    const event = MOCK_EVENTS.find(e => e.id === eventId);
+    if (!event) return;
+    
+    // Obter localização do usuário
+    const location = await getUserLocation();
+    if (!location) return;
+    
+    // Calcular distância até o evento
+    const distance = calculateDistance(
+      location.latitude, 
+      location.longitude,
+      event.latitude,
+      event.longitude
+    );
+    
+    // Verificar se está dentro do raio do evento
+    if (distance > event.radius) {
+      Alert.alert(
+        'Muito Longe!',
+        `Você está a ${distance.toFixed(1)}km do evento.\n\nPara fazer check-in, você precisa estar a no máximo ${event.radius}km do local.`,
+        [{ text: 'Entendi' }]
+      );
+      return;
+    }
+
+    // Se for premium com limite ilimitado, apenas fazer check-in
+    if (CHECKIN_LIMIT === -1) {
+      setCheckinCount(checkinCount + 1);
+      setCheckedInEvents([...checkedInEvents, eventId]);
+      Alert.alert(
+        '✅ Check-in Realizado!',
+        `Você fez check-in em "${event.name}"!\n\nSeu perfil agora aparece em destaque para outros participantes.`
+      );
+      return;
+    }
+
+    // Consumir item Checkin Agro do inventário
+    const consumeResult = await useInventoryItemByName(currentUser.id, 'Checkin Agro', 1);
+    if (!consumeResult.success) {
+      console.log('❌ Sem Checkin Agro disponível:', consumeResult.error);
       Alert.alert(
         'Limite Atingido',
-        'Você atingiu o limite de "Checkin Agro" do seu plano. Deseja comprar pacotes adicionais?',
+        'Você não tem "Checkin Agro" disponível. Deseja comprar pacotes adicionais?',
         [
           { text: 'Cancelar', style: 'cancel' },
           { text: 'Ver Pacotes', onPress: () => router.push('/store' as any) },
@@ -87,8 +226,13 @@ export default function EventLocationScreen() {
       return;
     }
     
+    console.log(`✅ Checkin Agro usado! Restante: ${consumeResult.remaining}`);
     setCheckinCount(checkinCount + 1);
-    Alert.alert('Check-in Realizado!', 'Você fez check-in no evento!');
+    setCheckedInEvents([...checkedInEvents, eventId]);
+    Alert.alert(
+      '✅ Check-in Realizado!',
+      `Você fez check-in em "${event.name}"!\n\nSeu perfil agora aparece em destaque para outros participantes.`
+    );
   };
 
   return (
@@ -162,7 +306,7 @@ export default function EventLocationScreen() {
                   onPress={() => handleBotaNoEvento(event.id)}
                 >
                   <LinearGradient
-                    colors={['#F9A825', '#E8960F']}
+                    colors={['#D4AD63', '#B8944D']}
                     style={styles.botaGradient}
                   >
                     <Ionicons name="leaf" size={20} color="#FFF" />
@@ -190,7 +334,7 @@ export default function EventLocationScreen() {
         {!hasPremium && (
           <View style={styles.upgradeSection}>
             <LinearGradient
-              colors={['#FFD700', BotaLoveColors.primary]}
+              colors={['#E5C88A', BotaLoveColors.primary]}
               style={styles.upgradeGradient}
             >
               <Ionicons name="star" size={32} color="#FFF" />

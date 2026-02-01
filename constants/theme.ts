@@ -10,10 +10,10 @@ export * from './typography';
 
 // Bota Love Color Palette
 export const BotaLoveColors = {
-  // Primary colors (orange/yellow agro)
-  primary: '#F9A825',
-  primaryLight: '#FFD54F',
-  primaryDark: '#F57C00',
+  // Primary colors (gold/dourado elegante)
+  primary: '#D4AD63',
+  primaryLight: '#E5C88A',
+  primaryDark: '#B8944D',
   
   // Secondary colors (dark brown leather)
   secondary: '#502914',

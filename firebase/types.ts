@@ -18,8 +18,8 @@ export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'expired' | 'canc
 export type SubscriptionPlan = 'free' | 'premium_monthly' | 'premium_quarterly' | 'premium_annual' | 'network_monthly' | 'network_lifetime';
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 export type PaymentProvider = 'apple_store' | 'google_play' | 'stripe' | 'simulated';
-export type ChatOrigin = 'match' | 'network' | 'correio_da_roca';
-export type MessageType = 'text' | 'image' | 'audio' | 'system';
+export type ChatOrigin = 'match' | 'network' | 'correio_da_roca' | 'misterio_do_campo';
+export type MessageType = 'text' | 'image' | 'audio' | 'system' | 'misterio';
 export type MessageStatus = 'sent' | 'delivered' | 'read';
 export type NotificationType = 'match' | 'message' | 'like' | 'super_like' | 'trial_expiring' | 'subscription_expired' | 'system';
 export type RelationshipGoal = 'amizade' | 'namoro' | 'casamento' | 'eventos' | 'network';
@@ -68,11 +68,21 @@ export interface FirebaseUser {
   
   // Inventário de itens avulsos
   inventory?: UserInventory;
+  
+  // Status de boost (Assobios do Peão)
+  boostStatus?: UserBoostStatus;
 }
 
 export interface UserInventory {
   superLikes: number;
   boosts: number;
+}
+
+// Status de boost ativo do usuário
+export interface UserBoostStatus {
+  isActive: boolean;
+  activatedAt?: Timestamp;
+  expiresAt?: Timestamp;
 }
 
 export interface UserProfile {
@@ -86,15 +96,28 @@ export interface UserProfile {
   city: string;
   state: string;
   occupation: string;
-  interests: string[];
   relationshipGoals: RelationshipGoal[];
   isAgroUser: boolean;
   agroAreas?: string[];
   profileCompleted?: boolean; // Flag para indicar perfil completo
-  lookingFor?: string; // Para quem está interessado
   
-  // Novos campos - Informações Básicas
+  // Novos campos obrigatórios - O que procura por aqui
+  lookingForGoals?: LookingForGoal[]; // Múltipla escolha: amizade, namoro, casamento, eventos, network
+  networkEnabled?: boolean; // Se ativou Network no Agro
+  
+  // Nacionalidade e preferência de moradia
+  nationality?: string;
+  livingPreference?: LivingPreference; // 'campo' | 'cidade' | 'ambos'
+  
+  // Valores rurais (múltipla escolha)
+  ruralValues?: RuralValue[];
+  
+  // Orientação sexual
+  sexualOrientation?: SexualOrientation;
+  
+  // Informações Básicas
   birthCity?: string;
+  birthState?: string; // Estado de nascimento
   height?: string;
   children?: string;
   education?: string;
@@ -107,12 +130,22 @@ export interface UserProfile {
   animals?: string[];
   crops?: string[];
   
-  // Preferências
+  // Preferências e hobbies
   musicalStyles?: string[];
-  hobbies?: string[];
+  hobbies?: string[]; // Hobbies rurais
+  ruralHobbies?: string[]; // Hobbies específicos rurais
   personalTastes?: string[];
   pets?: string[];
+  
+  // Campos removidos/depreciados
+  interests?: string[]; // Removido conforme solicitação
 }
+
+// Tipos para novos campos
+export type LookingForGoal = 'amizade_agro' | 'namoro_agro' | 'casamento_agro' | 'eventos_agro' | 'network_agro';
+export type LivingPreference = 'campo' | 'cidade' | 'ambos';
+export type RuralValue = 'familia' | 'conservador' | 'tradicao' | 'fe_religiao' | 'simplicidade' | 'prosperidade' | 'carater_respeito' | 'bruto' | 'rustico' | 'sistematico';
+export type SexualOrientation = 'heterossexual' | 'homossexual' | 'bissexual' | 'pansexual' | 'assexual' | 'outro' | 'prefiro_nao_dizer';
 
 export interface UserSubscription {
   status: SubscriptionStatus;
@@ -277,6 +310,17 @@ export interface FirebaseMessage {
   moderated: boolean;
   originalText?: string; // Se foi sanitizado
   moderationScore?: number;
+  
+  // Mistério do Campo (mensagem anônima)
+  misterio?: {
+    isRevealed: boolean;          // Se a identidade foi revelada
+    revealedAt?: Timestamp;       // Quando foi revelada
+    revealMethod?: 'paid' | 'timer'; // Como foi revelada
+    expiresAt: Timestamp;         // Quando revela automaticamente (24h)
+    blurredPhotoUrl?: string;     // URL da foto desfocada
+    originalPhotoUrl?: string;    // URL da foto original (só mostrar após revelar)
+    senderName?: string;          // Nome do remetente (só mostrar após revelar)
+  };
   
   // Metadados
   metadata?: {

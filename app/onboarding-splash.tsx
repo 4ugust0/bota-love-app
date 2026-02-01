@@ -204,10 +204,8 @@ export default function OnboardingSplashScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   
-  // Estado para região aleatória
-  const [randomRegion] = useState(() => 
-    REGIONS[Math.floor(Math.random() * REGIONS.length)]
-  );
+  // Estado para região - muda conforme o carrossel
+  const currentRegion = REGIONS[currentIndex % REGIONS.length];
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // 🎬 Valores de animação
@@ -415,7 +413,7 @@ export default function OnboardingSplashScreen() {
           style={styles.locationTag}
         >
           <View style={styles.locationDot} />
-          <Text style={styles.locationText}>{randomRegion}</Text>
+          <Text style={styles.locationText}>{currentRegion}</Text>
         </Animated.View>
       </Animated.View>
 
@@ -524,10 +522,11 @@ const styles = StyleSheet.create({
   // Content
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingBottom: 180, // Subir o conteúdo
+    paddingTop: height * 0.18, // Posicionar logo abaixo do arco dourado
+    paddingBottom: 180,
     zIndex: 3,
   },
   logoContainer: {
@@ -559,11 +558,12 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: splashColors.primary,
     letterSpacing: 4,
-    marginTop: 12,
+    marginTop: 16,
     textTransform: 'uppercase',
     textShadowColor: splashColors.shadow,
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    textAlign: 'center',
   },
   
   // Location Tag
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderWidth: 1,
     borderColor: 'rgba(212, 173, 99, 0.3)',
-    marginTop: 32,
+    marginTop: 60,
     gap: 10,
   },
   locationDot: {

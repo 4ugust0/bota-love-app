@@ -34,6 +34,10 @@ export type ItemType =
   | 'incognito'
   | 'spotlight'
   | 'checkin_agro'
+  | 'correio_da_roca'
+  | 'misterio_do_campo'
+  | 'bota_no_evento'
+  | 'passaporte_rural'
   | 'other';
 
 export type ItemStatus = 'active' | 'inactive' | 'promotion';
@@ -77,15 +81,19 @@ export interface PricePackageWithSavings extends PricePackage {
 
 export const itemTypeLabels: Record<ItemType, string> = {
   super_like: 'Super Agro',
-  boost: 'Boost',
-  rewind: 'Voltar Perfil',
+  boost: 'Assobios do Peão (Boost)',
+  rewind: 'Retorno da Estrada Livre',
   see_likes: 'Olhar do Campo',
-  unlimited_likes: 'Likes Ilimitados',
+  unlimited_likes: 'Curtidas Ilimitadas',
   read_receipts: 'Confirmação de Leitura',
   priority_likes: 'Likes Prioritários',
   incognito: 'Modo Incógnito',
   spotlight: 'Destaque Rural',
-  checkin_agro: 'Checkin Agro',
+  checkin_agro: 'Checkin Agro Premium',
+  correio_da_roca: 'Correio da Roça',
+  misterio_do_campo: 'Mistério do Campo',
+  bota_no_evento: 'Bota no Evento',
+  passaporte_rural: 'Passaporte Rural',
   other: 'Outro',
 };
 
@@ -100,6 +108,10 @@ export const itemTypeIcons: Record<ItemType, string> = {
   incognito: 'eye-off',
   spotlight: 'sparkles',
   checkin_agro: 'location',
+  correio_da_roca: 'mail',
+  misterio_do_campo: 'help-circle',
+  bota_no_evento: 'calendar',
+  passaporte_rural: 'globe',
   other: 'cube',
 };
 
@@ -112,8 +124,12 @@ export const itemTypeColors: Record<ItemType, string> = {
   read_receipts: '#27AE60',
   priority_likes: '#FF6B35',
   incognito: '#607D8B',
-  spotlight: '#FFD700',
+  spotlight: '#D4AD63',
   checkin_agro: '#2ECC71',
+  correio_da_roca: '#3498DB',
+  misterio_do_campo: '#8E44AD',
+  bota_no_evento: '#E67E22',
+  passaporte_rural: '#1ABC9C',
   other: '#95A5A6',
 };
 
@@ -346,11 +362,116 @@ export const MOCK_STORE_ITEMS: StoreItem[] = [
       { quantity: 3, price: 11990 },
       { quantity: 5, price: 17990 },
     ],
-    color: '#FFD700',
+    color: '#D4AD63',
     badgeText: 'PREMIUM',
     status: 'active',
     order: 5,
     totalSales: 30,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'correio_da_roca_1',
+    name: 'Correio da Roça',
+    description: 'Envie uma mensagem para alguém antes do match! Mostre seu interesse de forma criativa.',
+    type: 'correio_da_roca',
+    pricePackages: [
+      { quantity: 3, price: 1490 },
+      { quantity: 10, price: 3990 },
+      { quantity: 25, price: 7990 },
+    ],
+    color: '#3498DB',
+    badgeText: 'NOVO',
+    status: 'active',
+    order: 6,
+    totalSales: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'misterio_do_campo_1',
+    name: 'Mistério do Campo',
+    description: 'Envie uma mensagem anônima com sua foto desfocada. A pessoa pode revelar por R$1,99 ou aguardar 24h!',
+    type: 'misterio_do_campo',
+    pricePackages: [
+      { quantity: 1, price: 490 },
+      { quantity: 5, price: 1990 },
+      { quantity: 10, price: 2990 },
+    ],
+    color: '#8E44AD',
+    badgeText: 'EXCLUSIVO',
+    status: 'active',
+    order: 7,
+    totalSales: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'bota_no_evento_1',
+    name: 'Bota no Evento',
+    description: 'Marque presença antecipada em eventos agro e seja notificado quando outros participantes confirmarem!',
+    type: 'bota_no_evento',
+    pricePackages: [
+      { quantity: 3, price: 990 },
+      { quantity: 10, price: 2490 },
+      { quantity: 20, price: 3990 },
+    ],
+    color: '#E67E22',
+    status: 'active',
+    order: 8,
+    totalSales: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'assobios_do_peao_1',
+    name: 'Assobios do Peão (Boost)',
+    description: 'Destaque seu perfil por 1 hora! Apareça para muito mais pessoas e aumente suas chances de match.',
+    type: 'boost',
+    pricePackages: [
+      { quantity: 1, price: 1990 },
+      { quantity: 5, price: 7990 },
+      { quantity: 10, price: 12990 },
+    ],
+    color: '#9B59B6',
+    badgeText: 'DESTAQUE',
+    status: 'active',
+    order: 9,
+    totalSales: 25,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'passaporte_rural_1',
+    name: 'Passaporte Rural',
+    description: 'Explore perfis de qualquer região do Brasil! Encontre pessoas além da sua área.',
+    type: 'passaporte_rural',
+    pricePackages: [
+      { quantity: 1, price: 2990 },
+      { quantity: 7, price: 14990 },
+      { quantity: 30, price: 39990 },
+    ],
+    color: '#1ABC9C',
+    status: 'active',
+    order: 10,
+    totalSales: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'retorno_estrada_1',
+    name: 'Retorno da Estrada Livre',
+    description: 'Voltou atrás? Use para desfazer seu último passe e dar outra chance ao perfil.',
+    type: 'rewind',
+    pricePackages: [
+      { quantity: 5, price: 990 },
+      { quantity: 15, price: 2490 },
+      { quantity: 30, price: 3990 },
+    ],
+    color: '#F39C12',
+    status: 'active',
+    order: 11,
+    totalSales: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   },

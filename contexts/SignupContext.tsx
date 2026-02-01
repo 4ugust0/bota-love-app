@@ -8,6 +8,7 @@
  * - Senha
  * - Confirmação de senha
  * - Termos de uso
+ * - O que procura por aqui (novos campos)
  * 
  * @author Bota Love Team
  */
@@ -19,6 +20,8 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 // =============================================================================
 
 export type UserType = 'agro' | 'simpatizante' | 'produtor';
+export type LookingForGoal = 'amizade_agro' | 'namoro_agro' | 'casamento_agro' | 'eventos_agro' | 'network_agro';
+export type GenderPreference = 'men' | 'women' | 'both';
 
 export interface SignupData {
   name: string;
@@ -28,6 +31,14 @@ export interface SignupData {
   verificationCode?: string;
   userType?: UserType;
   isAgroUser?: boolean;
+  
+  // Novos campos - Data de nascimento e preferência de gênero
+  birthdate?: string;
+  genderPreference?: GenderPreference;
+  
+  // Novos campos - O que procura por aqui
+  lookingForGoals?: LookingForGoal[];
+  networkEnabled?: boolean;
 }
 
 export interface SignupContextType {
@@ -42,6 +53,10 @@ export interface SignupContextType {
   setVerificationCode: (code: string) => void;
   setUserType: (type: UserType) => void;
   setIsAgroUser: (isAgro: boolean) => void;
+  setBirthdate: (birthdate: string) => void;
+  setGenderPreference: (preference: GenderPreference) => void;
+  setLookingForGoals: (goals: LookingForGoal[]) => void;
+  setNetworkEnabled: (enabled: boolean) => void;
   
   // Utilitários
   resetSignup: () => void;
@@ -60,6 +75,10 @@ const initialSignupData: SignupData = {
   verificationCode: undefined,
   userType: undefined,
   isAgroUser: undefined,
+  birthdate: undefined,
+  genderPreference: undefined,
+  lookingForGoals: [],
+  networkEnabled: false,
 };
 
 // =============================================================================
@@ -103,6 +122,22 @@ export function SignupProvider({ children }: { children: ReactNode }) {
     setSignupData(prev => ({ ...prev, isAgroUser }));
   };
 
+  const setBirthdate = (birthdate: string) => {
+    setSignupData(prev => ({ ...prev, birthdate }));
+  };
+
+  const setGenderPreference = (genderPreference: GenderPreference) => {
+    setSignupData(prev => ({ ...prev, genderPreference }));
+  };
+
+  const setLookingForGoals = (lookingForGoals: LookingForGoal[]) => {
+    setSignupData(prev => ({ ...prev, lookingForGoals }));
+  };
+
+  const setNetworkEnabled = (networkEnabled: boolean) => {
+    setSignupData(prev => ({ ...prev, networkEnabled }));
+  };
+
   const resetSignup = () => {
     setSignupData(initialSignupData);
   };
@@ -112,7 +147,11 @@ export function SignupProvider({ children }: { children: ReactNode }) {
       signupData.name &&
       signupData.email &&
       signupData.password &&
-      signupData.emailVerified
+      signupData.emailVerified &&
+      signupData.birthdate &&
+      signupData.genderPreference &&
+      signupData.lookingForGoals &&
+      signupData.lookingForGoals.length > 0
     );
   };
 
@@ -127,6 +166,10 @@ export function SignupProvider({ children }: { children: ReactNode }) {
         setVerificationCode,
         setUserType,
         setIsAgroUser,
+        setBirthdate,
+        setGenderPreference,
+        setLookingForGoals,
+        setNetworkEnabled,
         resetSignup,
         isComplete,
       }}

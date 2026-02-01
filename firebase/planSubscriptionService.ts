@@ -600,6 +600,70 @@ export const useInventoryItem = async (
 };
 
 /**
+ * Usa um item do inventário pelo NOME do item
+ * Mais flexível que usar por ID, pois itens podem vir de planos ou loja com IDs diferentes
+ */
+export const useInventoryItemByName = async (
+  userId: string,
+  itemName: string,
+  quantity: number = 1
+): Promise<{ success: boolean; remaining: number; error?: string }> => {
+  try {
+    const docRef = doc(firestore, INVENTORY_COLLECTION, userId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      return { success: false, remaining: 0, error: 'Inventário não encontrado' };
+    }
+
+    const inventory = docSnap.data() as UserInventory;
+    
+    // Buscar item pelo nome (case insensitive)
+    const itemIndex = inventory.items.findIndex(
+      (i) => i.itemName.toLowerCase() === itemName.toLowerCase()
+    );
+
+    if (itemIndex < 0) {
+      return { success: false, remaining: 0, error: `Item "${itemName}" não encontrado no inventário` };
+    }
+
+    const item = inventory.items[itemIndex];
+
+    // Verificar se é ilimitado
+    if (item.quantity === -1) {
+      return { success: true, remaining: -1 }; // Ilimitado
+    }
+
+    // Verificar se tem quantidade suficiente
+    if (item.quantity < quantity) {
+      return { 
+        success: false, 
+        remaining: item.quantity, 
+        error: `Quantidade insuficiente. Você tem ${item.quantity} ${item.itemName}(s)` 
+      };
+    }
+
+    // Decrementar quantidade
+    inventory.items[itemIndex].quantity -= quantity;
+
+    await updateDoc(docRef, {
+      items: inventory.items,
+      updatedAt: serverTimestamp(),
+    });
+
+    console.log(`✅ Item usado: ${quantity}x ${item.itemName}. Restante: ${inventory.items[itemIndex].quantity}`);
+
+    return { 
+      success: true, 
+      remaining: inventory.items[itemIndex].quantity 
+    };
+  } catch (error: any) {
+    console.error('Erro ao usar item:', error);
+    return { success: false, remaining: 0, error: error.message };
+  }
+};
+
+/**
  * Verifica se o usuário tem um item específico
  */
 export const hasInventoryItem = async (
@@ -662,6 +726,130 @@ export const getPaymentHistory = async (userId: string): Promise<PaymentRecord[]
 };
 
 // =============================================================================
+// 🚀 ASSOBIOS DO PEÃO (BOOST)
+// =============================================================================
+
+/**
+ * Interface para o status do boost
+ */
+interface BoostStatus {
+  isActive: boolean;
+  activatedAt?: Date;
+  expiresAt?: Date;
+  remainingMinutes?: number;
+}
+
+/**
+ * Ativa o boost (Assobios do Peão) por 1 hora
+ * O perfil do usuário aparece em destaque no feed de discovery
+ */
+export const activateBoost = async (userId: string): Promise<{ success: boolean; error?: string; expiresAt?: Date }> => {
+  try {
+    // Verificar se o usuário tem boost no inventário
+    const consumeResult = await useInventoryItemByName(userId, 'Assobios do Peão', 1);
+    
+    if (!consumeResult.success) {
+      return { 
+        success: false, 
+        error: 'Você não tem Assobios do Peão disponível. Compre mais na loja!' 
+      };
+    }
+    
+    // Calcular expiração (1 hora a partir de agora)
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 60 * 60 * 1000); // +1 hora
+    
+    // Atualizar status de boost do usuário
+    const userRef = doc(firestore, 'users', userId);
+    await updateDoc(userRef, {
+      boostStatus: {
+        isActive: true,
+        activatedAt: serverTimestamp(),
+        expiresAt: Timestamp.fromDate(expiresAt),
+      },
+      updatedAt: serverTimestamp(),
+    });
+    
+    console.log(`🚀 Boost ativado para usuário ${userId}! Expira em: ${expiresAt.toISOString()}`);
+    
+    return { success: true, expiresAt };
+  } catch (error: any) {
+    console.error('Erro ao ativar boost:', error);
+    return { success: false, error: error.message || 'Erro ao ativar boost' };
+  }
+};
+
+/**
+ * Verifica se o boost do usuário ainda está ativo
+ */
+export const checkBoostStatus = async (userId: string): Promise<BoostStatus> => {
+  try {
+    const userRef = doc(firestore, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      return { isActive: false };
+    }
+    
+    const userData = userSnap.data();
+    const boostStatus = userData.boostStatus;
+    
+    if (!boostStatus || !boostStatus.isActive) {
+      return { isActive: false };
+    }
+    
+    // Verificar se expirou
+    const expiresAt = boostStatus.expiresAt?.toDate?.() || new Date(0);
+    const now = new Date();
+    
+    if (now >= expiresAt) {
+      // Boost expirou, desativar
+      await updateDoc(userRef, {
+        'boostStatus.isActive': false,
+        updatedAt: serverTimestamp(),
+      });
+      return { isActive: false };
+    }
+    
+    // Boost ainda ativo
+    const remainingMinutes = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60));
+    
+    return {
+      isActive: true,
+      activatedAt: boostStatus.activatedAt?.toDate?.(),
+      expiresAt,
+      remainingMinutes,
+    };
+  } catch (error) {
+    console.error('Erro ao verificar boost:', error);
+    return { isActive: false };
+  }
+};
+
+/**
+ * Obtém usuários com boost ativo (para priorizar no feed)
+ * Retorna lista de IDs de usuários com boost ativo
+ */
+export const getBoostedUsers = async (): Promise<string[]> => {
+  try {
+    const now = Timestamp.now();
+    
+    const q = query(
+      collection(firestore, 'users'),
+      where('boostStatus.isActive', '==', true),
+      where('boostStatus.expiresAt', '>', now)
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    return snapshot.docs.map(doc => doc.id);
+  } catch (error) {
+    console.error('Erro ao buscar usuários com boost:', error);
+    return [];
+  }
+};
+
+// =============================================================================
 // EXPORTAR TUDO
 // =============================================================================
 
@@ -680,8 +868,14 @@ export default {
   getUserInventory,
   addItemsToInventory,
   useInventoryItem,
+  useInventoryItemByName,
   hasInventoryItem,
   getItemQuantity,
+  
+  // Boost
+  activateBoost,
+  checkBoostStatus,
+  getBoostedUsers,
   
   // Pagamentos
   getPaymentHistory,

@@ -75,6 +75,19 @@ export async function likeUser(
   isSuperLike: boolean = false
 ): Promise<LikeResult> {
   try {
+    // Verificar se é usuário MOCK (simular sucesso sem salvar)
+    if (toUserId.startsWith('user-') || toUserId.startsWith('mock-')) {
+      console.log(`⏭️ Like em usuário MOCK simulado: ${fromUserId} -> ${toUserId} (SuperLike: ${isSuperLike})`);
+      // Simular match aleatório para demo
+      const simulateMatch = Math.random() < 0.3; // 30% chance de match
+      return { 
+        success: true, 
+        isMatch: simulateMatch,
+        matchId: simulateMatch ? `mock_match_${Date.now()}` : undefined,
+        chatId: simulateMatch ? `mock_chat_${Date.now()}` : undefined
+      };
+    }
+    
     // Verificar se já deu like
     const existingLike = await getLike(fromUserId, toUserId);
     if (existingLike) {
@@ -211,6 +224,12 @@ export async function likeUser(
  */
 export async function passUser(fromUserId: string, toUserId: string): Promise<void> {
   try {
+    // Verificar se é usuário MOCK (não salvar no Firebase)
+    if (toUserId.startsWith('user-') || toUserId.startsWith('mock-')) {
+      console.log(`⏭️ Pass em usuário MOCK ignorado: ${fromUserId} -> ${toUserId}`);
+      return;
+    }
+    
     const passId = `${fromUserId}_${toUserId}`;
     const passRef = doc(firestore, COLLECTIONS.PASSES, passId);
     
@@ -224,10 +243,13 @@ export async function passUser(fromUserId: string, toUserId: string): Promise<vo
       expiresAt,
     };
     
+    console.log(`🔄 Tentando registrar pass: ${fromUserId} -> ${toUserId}`);
     await setDoc(passRef, passData);
     console.log(`✅ Pass registrado: ${fromUserId} -> ${toUserId}`);
   } catch (error) {
-    console.error('Erro ao registrar pass:', error);
+    console.error('❌ Erro ao registrar pass:', error);
+    // Re-throw para debugging - pode ser removido depois
+    throw error;
   }
 }
 

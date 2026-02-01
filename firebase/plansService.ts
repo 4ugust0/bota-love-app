@@ -110,7 +110,7 @@ export const getLimitText = (value: number): string => {
 export const categoryColors: Record<PlanCategory, string> = {
   sou_agro: '#2ECC71',
   simpatizante_agro: '#8b5cf6',
-  all: '#F9A825',
+  all: '#D4AD63',
 };
 
 /**

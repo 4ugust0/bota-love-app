@@ -3,7 +3,7 @@
  * 
  * Chat em tempo real com Firebase:
  * - Mensagens em tempo real
- * - Envio de mensagens com moderação
+ * - Envio de mensagens com moderação avançada (REGEX + IA)
  * - Status de leitura
  * - Indicador de digitação
  * 
@@ -14,11 +14,6 @@ import ConversionModal, { BlockedChatInput } from '@/components/ConversionModal'
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFreePlan } from '@/contexts/FreePlanContext';
-import {
-    moderateMessage,
-    MODERATION_FEEDBACK,
-    shouldBlockContent,
-} from '@/data/contentModerationService';
 import { useChatMessages } from '@/hooks/useChat';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -125,17 +120,6 @@ export default function ChatDetailScreen() {
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return;
 
-    // 🔒 MODERAÇÃO DE CONTEÚDO (sempre ativa)
-    if (shouldBlockContent(newMessage)) {
-      const result = moderateMessage(newMessage);
-      Alert.alert(
-        '⚠️ Conteúdo não permitido',
-        MODERATION_FEEDBACK.content_blocked,
-        [{ text: 'Entendi' }]
-      );
-      return;
-    }
-
     // 🎯 VERIFICAÇÃO DE LIMITE (silenciosa até o bloqueio)
     if (!hasPremium && !consumeMessage(chatId as string)) {
       return;
@@ -146,9 +130,16 @@ export default function ChatDetailScreen() {
     setNewMessage('');
 
     try {
-      const success = await sendTextMessage(messageText);
-      if (!success) {
-        Alert.alert('Erro', 'Não foi possível enviar a mensagem. Tente novamente.');
+      // 🔒 Enviar mensagem com moderação avançada (REGEX + IA)
+      const result = await sendTextMessage(messageText, hasPremium);
+      
+      if (!result.success) {
+        // Mostrar mensagem de moderação específica
+        Alert.alert(
+          '⚠️ Conteúdo não permitido',
+          result.error || 'Não foi possível enviar a mensagem. Tente novamente.',
+          [{ text: 'Entendi' }]
+        );
         setNewMessage(messageText); // Restaurar mensagem
       }
     } catch (err) {

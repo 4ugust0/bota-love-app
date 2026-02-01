@@ -14,7 +14,7 @@ interface NetworkRuralIconProps extends SvgProps {
  */
 export default function NetworkRuralIcon({
   size = 24,
-  color = '#F9A825',
+  color = '#D4AD63',
   secondaryColor,
   ...props
 }: NetworkRuralIconProps) {

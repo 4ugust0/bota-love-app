@@ -200,6 +200,42 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Preferências Agrolove - Filtro Avançado Premium */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Preferências Agrolove</Text>
+            <View style={styles.premiumBadge}>
+              <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+            </View>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.agroloveCard}
+            onPress={() => router.push('/agrolove-preferences' as any)}
+          >
+            <LinearGradient
+              colors={['#FFF8E1', '#FFFDE7']}
+              style={styles.agroloveCardGradient}
+            >
+              <View style={styles.agroloveCardContent}>
+                <View style={styles.agroloveIconContainer}>
+                  <Text style={styles.agroloveIcon}>🌾</Text>
+                </View>
+                <View style={styles.agroloveTextContainer}>
+                  <Text style={styles.agroloveTitle}>Filtro Avançado do Agro</Text>
+                  <Text style={styles.agroloveDescription}>
+                    Encontre pessoas com as preferências que você procura
+                  </Text>
+                  <View style={styles.agrolovePrice}>
+                    <Text style={styles.agrolovePriceText}>R$ 39,90</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color={BotaLoveColors.primary} />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
         {/* Suporte */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Suporte</Text>
@@ -521,5 +557,84 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // Agrolove Preferences styles
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  premiumBadge: {
+    backgroundColor: BotaLoveColors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  premiumBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFF',
+    letterSpacing: 0.5,
+  },
+  agroloveCard: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: BotaLoveColors.primary,
+  },
+  agroloveCardGradient: {
+    padding: 16,
+  },
+  agroloveCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  agroloveIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+    shadowColor: BotaLoveColors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  agroloveIcon: {
+    fontSize: 28,
+  },
+  agroloveTextContainer: {
+    flex: 1,
+  },
+  agroloveTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: BotaLoveColors.secondary,
+    marginBottom: 4,
+  },
+  agroloveDescription: {
+    fontSize: 12,
+    color: BotaLoveColors.textSecondary,
+    lineHeight: 18,
+    marginBottom: 6,
+  },
+  agrolovePrice: {
+    backgroundColor: BotaLoveColors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  agrolovePriceText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFF',
   },
 });

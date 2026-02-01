@@ -44,7 +44,7 @@ export default function SignupNameScreen() {
     }
     // Salvar nome no contexto
     saveNameToContext(name.trim());
-    router.push('/signup-email');
+    router.push('/signup-birthdate');
   };
 
   return (

@@ -1,6 +1,8 @@
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadProfilePhoto } from '@/firebase/storageService';
+import { logModerationAttempt, moderateBio } from '@/services/advancedModerationService';
+import { validateBioComplete } from '@/services/bioValidationService';
 import { getModerationErrorMessage, moderateImage } from '@/services/imageModeration';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -9,18 +11,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -265,6 +267,37 @@ export default function EditProfileScreen() {
     if (isProducer) {
       if (!name.trim()) {
         Alert.alert('Erro', 'Por favor, preencha o nome');
+        return;
+      }
+    }
+
+    // Validação da biografia (regex para contatos)
+    if (bio.trim()) {
+      // Primeiro: validação básica
+      const bioValidation = validateBioComplete(bio, { required: false });
+      if (!bioValidation.isValid) {
+        Alert.alert(
+          '⚠️ Atenção',
+          bioValidation.errorMessage || 'Sua biografia contém informações não permitidas.',
+          [{ text: 'Entendi, vou corrigir' }]
+        );
+        return;
+      }
+
+      // Segundo: moderação avançada com REGEX + IA
+      const moderationResult = await moderateBio(bio);
+      
+      // Logar tentativa de moderação
+      if (currentUser) {
+        logModerationAttempt(currentUser.id, 'bio', bio, moderationResult);
+      }
+      
+      if (moderationResult.action !== 'allow') {
+        Alert.alert(
+          moderationResult.action === 'escalate' ? '🚫 Conteúdo Não Permitido' : '⚠️ Atenção',
+          moderationResult.userMessage,
+          [{ text: 'Entendi, vou corrigir' }]
+        );
         return;
       }
     }
@@ -743,7 +776,7 @@ export default function EditProfileScreen() {
         {/* 1. INFORMAÇÕES BÁSICAS */}
         <View style={styles.categoryCard}>
           <LinearGradient
-            colors={['#FFD700', BotaLoveColors.primary]}
+            colors={['#E5C88A', BotaLoveColors.primary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.categoryHeader}
@@ -1407,7 +1440,7 @@ export default function EditProfileScreen() {
           disabled={isSaving}
         >
           <LinearGradient
-            colors={['#FFD700', BotaLoveColors.primary, '#FF69B4']}
+            colors={['#E5C88A', BotaLoveColors.primary, '#FF69B4']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.saveButtonGradient}

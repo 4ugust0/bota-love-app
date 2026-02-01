@@ -165,7 +165,7 @@ export function LocationInitializer({ children }: LocationInitializerProps) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={[BotaLoveColors.primary, '#E8960F', '#D4770F']}
+        colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark, BotaLoveColors.primaryDark]}
         style={styles.gradient}
       >
         <ScrollView 
@@ -207,7 +207,7 @@ export function LocationInitializer({ children }: LocationInitializerProps) {
           {/* Mensagem de erro GPS */}
           {(gpsError || permissionDenied) && (
             <View style={styles.warningContainer}>
-              <Ionicons name="warning" size={20} color="#FFD700" />
+              <Ionicons name="warning" size={20} color="#D4AD63" />
               <Text style={styles.warningText}>
                 {permissionDenied 
                   ? 'Você negou a permissão de localização. Use a opção manual abaixo ou abra as configurações.'
@@ -421,11 +421,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.4)',
+    borderColor: 'rgba(212, 173, 99, 0.4)',
   },
   warningText: {
     fontSize: 13,
-    color: '#FFD700',
+    color: '#D4AD63',
     flex: 1,
     lineHeight: 18,
   },

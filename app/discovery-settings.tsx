@@ -1,5 +1,6 @@
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInventoryItemByName } from '@/firebase/planSubscriptionService';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,16 +8,16 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -76,6 +77,12 @@ export default function DiscoverySettingsScreen() {
   const [showOutsideDistance, setShowOutsideDistance] = useState(false);
   const [showOutsideAgeRange, setShowOutsideAgeRange] = useState(false);
   const [genderInterest, setGenderInterest] = useState<'men' | 'women' | 'both'>('women');
+  
+  // Rumo Certo - Mostra apenas quem curtiu você
+  const [rumoCertoEnabled, setRumoCertoEnabled] = useState(false);
+  
+  // Passaporte Rural - Permite alcance ilimitado temporário
+  const [passaporteRuralActive, setPassaporteRuralActive] = useState(false);
   
   // Filtros adicionais - Correspondentes ao perfil
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -180,6 +187,9 @@ export default function DiscoverySettingsScreen() {
       setShowOutsideAgeRange(settings.showOutsideAgeRange || false);
       setGenderInterest(settings.genderInterest || 'women');
       
+      // Rumo Certo
+      setRumoCertoEnabled((settings as any).rumoCertoEnabled || false);
+      
       // Filtros avançados - Correspondentes ao perfil
       setSelectedInterests(settings.selectedInterests || []);
       setSelectedProfessions(settings.selectedProfessions || []);
@@ -228,6 +238,9 @@ export default function DiscoverySettingsScreen() {
         onlyVerified: false,
         onlyWithPhotos: false,
         
+        // Rumo Certo (Premium only)
+        rumoCertoEnabled: hasPremium ? rumoCertoEnabled : false,
+        
         // Filtros avançados - Correspondentes ao perfil
         selectedInterests,
         selectedProfessions,
@@ -240,7 +253,7 @@ export default function DiscoverySettingsScreen() {
         selectedPets,
         selectedEducation,
         selectedChildren,
-      });
+      } as any);
       
       Alert.alert(
         'Sucesso! 🎉',
@@ -364,7 +377,7 @@ export default function DiscoverySettingsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={[BotaLoveColors.primary, '#E8960F']}
+        colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
         style={styles.header}
       >
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -390,7 +403,7 @@ export default function DiscoverySettingsScreen() {
             disabled={isGettingLocation}
           >
             <LinearGradient
-              colors={[BotaLoveColors.primary, '#E8960F']}
+              colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gpsGradient}
@@ -470,6 +483,71 @@ export default function DiscoverySettingsScreen() {
                 </TouchableOpacity>
               </View>
             )}
+            
+            {/* Botão Passaporte Rural */}
+            {!hasPremium && (
+              <TouchableOpacity
+                style={styles.passaporteRuralButton}
+                onPress={async () => {
+                  if (!currentUser?.id) return;
+                  
+                  if (passaporteRuralActive) {
+                    Alert.alert(
+                      '🌎 Passaporte Rural Ativo',
+                      'Você já tem o Passaporte Rural ativado! Explore perfis de qualquer região.',
+                      [{ text: 'OK' }]
+                    );
+                    return;
+                  }
+                  
+                  Alert.alert(
+                    '🌎 Passaporte Rural',
+                    'Deseja usar 1 Passaporte Rural para explorar perfis de qualquer região do Brasil?\n\nO efeito dura até você sair desta tela.',
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      {
+                        text: 'Usar Passaporte',
+                        onPress: async () => {
+                          const result = await useInventoryItemByName(currentUser.id, 'Passaporte Rural', 1);
+                          if (result.success) {
+                            setPassaporteRuralActive(true);
+                            setDistance(1000); // Permite alcance máximo
+                            Alert.alert(
+                              '✅ Passaporte Ativado!',
+                              'Agora você pode explorar perfis de qualquer região do Brasil!',
+                              [{ text: 'Explorar!' }]
+                            );
+                          } else {
+                            Alert.alert(
+                              'Sem Passaporte',
+                              'Você não tem Passaporte Rural disponível. Deseja comprar?',
+                              [
+                                { text: 'Cancelar', style: 'cancel' },
+                                { text: 'Comprar', onPress: () => router.push('/store' as any) }
+                              ]
+                            );
+                          }
+                        }
+                      }
+                    ]
+                  );
+                }}
+              >
+                <View style={styles.passaporteRuralContent}>
+                  <Ionicons 
+                    name="globe" 
+                    size={20} 
+                    color={passaporteRuralActive ? '#1ABC9C' : BotaLoveColors.primary} 
+                  />
+                  <Text style={styles.passaporteRuralText}>
+                    {passaporteRuralActive 
+                      ? '✅ Passaporte Rural Ativo' 
+                      : '🌎 Usar Passaporte Rural'}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Toggle - Mostrar perfis fora do raio */}
@@ -488,6 +566,47 @@ export default function DiscoverySettingsScreen() {
               onValueChange={setShowOutsideDistance}
               trackColor={{ false: '#E0E0E0', true: BotaLoveColors.primary }}
               thumbColor="#FFF"
+            />
+          </View>
+
+          {/* Rumo Certo - Mostrar apenas quem curtiu você */}
+          <View style={styles.toggleCard}>
+            <View style={styles.toggleLeft}>
+              <Ionicons name="compass" size={22} color={hasPremium ? '#9B59B6' : '#999'} />
+              <View style={styles.toggleTextContainer}>
+                <View style={styles.toggleTitleRow}>
+                  <Text style={styles.toggleTitle}>Rumo Certo</Text>
+                  {!hasPremium && (
+                    <View style={styles.premiumBadge}>
+                      <Ionicons name="diamond" size={12} color="#FFF" />
+                      <Text style={styles.premiumBadgeText}>PRO</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.toggleSubtitle}>
+                  Mostrar apenas quem já curtiu você
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={rumoCertoEnabled}
+              onValueChange={(value) => {
+                if (!hasPremium && value) {
+                  Alert.alert(
+                    '✨ Recurso Premium',
+                    'O Rumo Certo é exclusivo para assinantes Premium!\n\nVeja apenas perfis de pessoas que já demonstraram interesse em você.',
+                    [
+                      { text: 'Agora não', style: 'cancel' },
+                      { text: 'Ver Planos', onPress: () => router.push('/plans' as any) }
+                    ]
+                  );
+                  return;
+                }
+                setRumoCertoEnabled(value);
+              }}
+              trackColor={{ false: '#E0E0E0', true: '#9B59B6' }}
+              thumbColor="#FFF"
+              disabled={!hasPremium}
             />
           </View>
         </View>
@@ -786,7 +905,7 @@ export default function DiscoverySettingsScreen() {
                 onPress={confirmModalSelection}
               >
                 <LinearGradient
-                  colors={[BotaLoveColors.primary, '#E8960F']}
+                  colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
                   style={styles.modalConfirmGradient}
                 >
                   <Text style={styles.modalConfirmButtonText}>
@@ -1009,6 +1128,28 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
+  passaporteRuralButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#86EFAC',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  passaporteRuralContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  passaporteRuralText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#166534',
+  },
   toggleCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1032,6 +1173,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: BotaLoveColors.secondary,
     fontWeight: '500',
+  },
+  toggleTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#9B59B6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    gap: 3,
+  },
+  premiumBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   toggleSubtitle: {
     fontSize: 12,

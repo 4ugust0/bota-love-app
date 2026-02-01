@@ -15,8 +15,8 @@ const COLORS = {
   primaryDark: '#1B5E20',    // Verde escuro
   primaryLight: '#4CAF50',   // Verde claro
   secondary: '#8D6E63',      // Marrom terra
-  accent: '#FF6B35',         // Laranja sunset
-  background: '#FFF8E1',     // Creme/bege claro
+  accent: '#D4AD63',         // Dourado elegante
+  background: '#FFFFFF',     // Branco
   white: '#FFFFFF',
   text: '#3E2723',           // Marrom escuro
   textLight: '#5D4037',      // Marrom médio
@@ -24,6 +24,8 @@ const COLORS = {
   lightGray: '#F5F5F5',
   success: '#4CAF50',
   warning: '#FFA726',
+  gold: '#D4AD63',           // Dourado para caixas
+  beige: '#FFF8E1',          // Bege claro
 };
 
 // =============================================================================
@@ -103,7 +105,7 @@ export function getVerificationEmailTemplate(data: VerificationEmailData): strin
           
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%); padding: 40px 30px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #D4AD63 0%, #B8924F 100%); padding: 40px 30px; text-align: center;">
               <div class="header-emoji" style="font-size: 50px; margin-bottom: 15px;">🌾💚</div>
               <h1 style="margin: 0; color: ${COLORS.white}; font-size: 28px; font-weight: 700; letter-spacing: 1px;">
                 Bota Love
@@ -133,14 +135,14 @@ export function getVerificationEmailTemplate(data: VerificationEmailData): strin
                   <td align="center" style="padding: 20px 0;">
                     <div class="code-box" style="
                       display: inline-block;
-                      background: linear-gradient(135deg, ${COLORS.background} 0%, #FFF3E0 100%);
-                      border: 3px dashed ${COLORS.primary};
+                      background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+                      border: 3px solid #D4AD63;
                       border-radius: 12px;
                       padding: 25px 35px;
                       font-size: 36px;
                       font-weight: 800;
                       letter-spacing: 10px;
-                      color: ${COLORS.primaryDark};
+                      color: #B8924F;
                       font-family: 'Courier New', monospace;
                     ">
                       ${code}
@@ -472,7 +474,7 @@ export function getWelcomeEmailTemplate(data: WelcomeEmailData): string {
           
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%); padding: 40px 30px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #D4AD63 0%, #B8924F 100%); padding: 40px 30px; text-align: center;">
               <div style="font-size: 50px; margin-bottom: 15px;">🎉💚🌾</div>
               <h1 style="margin: 0; color: ${COLORS.white}; font-size: 28px; font-weight: 700;">
                 Bem-vindo ao Bota Love!

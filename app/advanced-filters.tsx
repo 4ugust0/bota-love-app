@@ -53,7 +53,7 @@ export default function AdvancedFiltersScreen() {
 
         <View style={styles.lockedContainer}>
           <LinearGradient
-            colors={['#FFD700', BotaLoveColors.primary, '#FF6B35']}
+            colors={['#E5C88A', BotaLoveColors.primary, '#B8944D']}
             style={styles.lockedGradient}
           >
             <View style={styles.lockedIconCircle}>

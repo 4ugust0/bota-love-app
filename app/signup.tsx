@@ -3,16 +3,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function SignupScreen() {
@@ -93,7 +93,7 @@ export default function SignupScreen() {
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
-              source={require('@/assets/images/logotipo/logotipo.jpeg')}
+              source={require('@/assets/images/logotipo/logotipo.png')}
               style={styles.logo}
               resizeMode="contain"
             />

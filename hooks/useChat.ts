@@ -179,7 +179,7 @@ interface UseChatMessagesReturn {
   error: string | null;
   otherUser: ChatUser | null;
   chatInfo: FirebaseChat | null;
-  sendTextMessage: (text: string) => Promise<boolean>;
+  sendTextMessage: (text: string, isPremiumUser?: boolean) => Promise<{ success: boolean; error?: string }>;
   loadMoreMessages: () => Promise<void>;
   hasMore: boolean;
 }
@@ -266,26 +266,26 @@ export function useChatMessages(chatId: string): UseChatMessagesReturn {
   }, [chatId, isAuthenticated, currentUser?.id]);
 
   // Enviar mensagem
-  const sendTextMessage = useCallback(async (text: string): Promise<boolean> => {
+  const sendTextMessage = useCallback(async (text: string, isPremiumUser: boolean = false): Promise<{ success: boolean; error?: string }> => {
     if (!text.trim() || !chatId || !currentUser?.id || sending) {
-      return false;
+      return { success: false, error: 'Não foi possível enviar a mensagem' };
     }
 
     setSending(true);
 
     try {
-      const result = await sendMessage(chatId, currentUser.id, text.trim(), 'text');
+      const result = await sendMessage(chatId, currentUser.id, text.trim(), 'text', isPremiumUser);
       
       if (!result.success) {
         setError(result.error || 'Erro ao enviar mensagem');
-        return false;
+        return { success: false, error: result.moderationMessage || result.error };
       }
 
-      return true;
+      return { success: true };
     } catch (err: any) {
       console.error('Erro ao enviar mensagem:', err);
       setError(err.message);
-      return false;
+      return { success: false, error: err.message };
     } finally {
       setSending(false);
     }

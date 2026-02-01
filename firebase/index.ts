@@ -286,7 +286,8 @@ export {
     getItemQuantity, getSubscriptionHistory, getPaymentHistory as getSubscriptionPaymentHistory, getUserInventory,
     hasInventoryItem,
     isSubscriptionActive, subscribeToPlan,
-    useInventoryItem
+    useInventoryItem,
+    useInventoryItemByName
 } from './planSubscriptionService';
 
 export type {

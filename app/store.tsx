@@ -18,15 +18,15 @@ import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth, firestore } from '@/firebase/config';
 import {
-  calculateSavings,
-  formatPrice,
-  getActiveStoreItems,
-  getItemColor,
-  getItemIcon,
-  incrementItemSales,
-  MOCK_STORE_ITEMS,
-  PricePackage,
-  StoreItem
+    calculateSavings,
+    formatPrice,
+    getActiveStoreItems,
+    getItemColor,
+    getItemIcon,
+    incrementItemSales,
+    MOCK_STORE_ITEMS,
+    PricePackage,
+    StoreItem
 } from '@/firebase/storeItemsService';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
@@ -35,18 +35,18 @@ import { useRouter } from 'expo-router';
 import { doc, getDoc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Dimensions,
-  Image,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Dimensions,
+    Image,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -423,7 +423,7 @@ export default function StoreScreen() {
             activeOpacity={0.9}
           >
             <LinearGradient
-              colors={['#F9A825', '#FF6F00']}
+              colors={['#D4AD63', '#B8944D']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.premiumGradient}
@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#B8944D',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1262,7 +1262,7 @@ const styles = StyleSheet.create({
   },
   pixExpires: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: '#B8944D',
     textAlign: 'center',
     marginBottom: 12,
     fontWeight: '500',
@@ -1566,7 +1566,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#B8944D',
     borderRadius: 25,
     paddingVertical: 14,
     paddingHorizontal: 24,

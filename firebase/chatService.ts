@@ -7,7 +7,7 @@
  * 
  * Inclui:
  * - Envio/recebimento de mensagens
- * - Moderação de conteúdo
+ * - Moderação de conteúdo (REGEX + IA)
  * - Gerenciamento de lembretes
  * - Histórico de conversas
  * 
@@ -15,6 +15,11 @@
  * @updated 2026-01-06
  */
 
+import {
+    logModerationAttempt,
+    moderateChatMessage,
+    ModerationAction
+} from '@/services/advancedModerationService';
 import {
     addDoc,
     collection,
@@ -55,6 +60,8 @@ export interface SendMessageResult {
   moderated?: boolean;
   blocked?: boolean;
   error?: string;
+  moderationAction?: ModerationAction;
+  moderationMessage?: string;
 }
 
 export interface ChatWithDetails {
@@ -203,13 +210,14 @@ export async function createNetworkChat(
 // =============================================================================
 
 /**
- * Envia mensagem com moderação
+ * Envia mensagem com moderação avançada (REGEX + IA)
  */
 export async function sendMessage(
   chatId: string,
   senderId: string,
   text: string,
-  type: MessageType = 'text'
+  type: MessageType = 'text',
+  isPremiumUser: boolean = false
 ): Promise<SendMessageResult> {
   try {
     // 1. Verificar se o chat existe e está ativo
@@ -231,39 +239,54 @@ export async function sendMessage(
       return { success: false, error: 'Acesso negado' };
     }
 
-    // 2. Moderar conteúdo (local por enquanto, depois via Cloud Function)
-    let sanitizedText = text;
+    // 2. MODERAÇÃO AVANÇADA LOCAL (REGEX + IA)
+    const moderationResult = await moderateChatMessage(text, isPremiumUser);
+    
+    // Logar tentativa de moderação
+    logModerationAttempt(senderId, 'chat', text, moderationResult);
+    
+    // Verificar resultado da moderação
+    if (moderationResult.action !== 'allow') {
+      return {
+        success: false,
+        blocked: true,
+        error: moderationResult.userMessage,
+        moderationAction: moderationResult.action,
+        moderationMessage: moderationResult.userMessage,
+      };
+    }
+
+    let sanitizedText = text.trim();
     let wasModerated = false;
     
+    // 3. Tentar moderação adicional via Cloud Function (se disponível)
     try {
-      // Tentar usar Cloud Function se disponível
       const moderateContent = httpsCallable(functions, 'moderateMessage');
-      const moderationResult = await moderateContent({ text, chatId, senderId });
-      const moderation = moderationResult.data as {
+      const cloudResult = await moderateContent({ text, chatId, senderId });
+      const cloudModeration = cloudResult.data as {
         allowed: boolean;
         sanitizedText: string;
         score: number;
         violations: string[];
       };
 
-      if (!moderation.allowed) {
+      if (!cloudModeration.allowed) {
         return {
           success: false,
           blocked: true,
           error: 'Mensagem bloqueada pela moderação',
+          moderationAction: 'block',
         };
       }
       
-      sanitizedText = moderation.sanitizedText;
+      sanitizedText = cloudModeration.sanitizedText;
       wasModerated = sanitizedText !== text;
     } catch (moderationError) {
-      // Se a Cloud Function não existir, continuar sem moderação remota
-      console.warn('Moderação via Cloud Function não disponível, usando fallback local');
-      // Moderação básica local
-      sanitizedText = text.trim();
+      // Cloud Function não disponível, já fizemos moderação local
+      console.warn('Moderação via Cloud Function não disponível, usando apenas moderação local');
     }
 
-    // 3. Criar mensagem
+    // 4. Criar mensagem
     const messagesRef = collection(firestore, COLLECTIONS.CHATS, chatId, COLLECTIONS.MESSAGES);
     
     const messageData: Omit<FirebaseMessage, 'id'> = {
@@ -279,7 +302,7 @@ export async function sendMessage(
 
     const messageRef = await addDoc(messagesRef, messageData);
 
-    // 4. Atualizar chat
+    // 5. Atualizar chat
     await updateDoc(doc(firestore, COLLECTIONS.CHATS, chatId), {
       lastMessage: {
         text: sanitizedText,
@@ -292,7 +315,7 @@ export async function sendMessage(
       inactivityReminders: 0, // Reset lembretes quando há atividade
     });
 
-    // 5. Enviar notificação push
+    // 6. Enviar notificação push
     const receiverId = chat.participants.find((p) => p !== senderId);
     if (receiverId) {
       const sendPushNotification = httpsCallable(functions, 'sendMessageNotification');
@@ -561,6 +584,222 @@ export function subscribeToUserChats(
  */
 export function getOtherParticipant(chat: FirebaseChat, currentUserId: string): string {
   return chat.participants.find((p) => p !== currentUserId) || '';
+}
+
+// =============================================================================
+// 🎭 MISTÉRIO DO CAMPO
+// =============================================================================
+
+/**
+ * Interface para dados do Mistério do Campo
+ */
+export interface MisterioDoCalampoData {
+  senderId: string;
+  recipientId: string;
+  message: string;
+  senderName: string;
+  senderPhotoUrl: string;
+  blurredPhotoUrl?: string;
+}
+
+/**
+ * Envia uma mensagem anônima "Mistério do Campo"
+ * A identidade do remetente fica oculta por 24h ou até o destinatário pagar R$1,99
+ */
+export async function sendMisterioMessage(data: MisterioDoCalampoData): Promise<SendMessageResult> {
+  try {
+    const { senderId, recipientId, message, senderName, senderPhotoUrl, blurredPhotoUrl } = data;
+    
+    // Criar ou obter chat de mistério
+    const participants = [senderId, recipientId].sort() as [string, string];
+    const chatId = `misterio_${participants[0]}_${participants[1]}_${Date.now()}`;
+    
+    const chatRef = doc(firestore, COLLECTIONS.CHATS, chatId);
+    
+    // Expiração: 24 horas a partir de agora
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+    
+    // Criar o chat de mistério
+    const chatData = {
+      participants,
+      origin: 'misterio_do_campo' as ChatOrigin,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      lastMessage: {
+        text: '🎭 Nova mensagem misteriosa...',
+        senderId,
+        timestamp: serverTimestamp(),
+        type: 'misterio',
+      },
+      isActive: true,
+      messageCount: 1,
+      inactivityReminders: 0,
+      misterioData: {
+        isRevealed: false,
+        expiresAt: Timestamp.fromDate(expiresAt),
+        senderId,
+      }
+    };
+    
+    await setDoc(chatRef, chatData);
+    
+    // Criar a mensagem
+    const messageRef = doc(collection(firestore, COLLECTIONS.CHATS, chatId, COLLECTIONS.MESSAGES));
+    
+    const messageData: Omit<FirebaseMessage, 'id'> = {
+      chatId,
+      senderId,
+      text: message,
+      type: 'misterio',
+      status: 'sent',
+      createdAt: Timestamp.now(),
+      moderated: false,
+      misterio: {
+        isRevealed: false,
+        expiresAt: Timestamp.fromDate(expiresAt),
+        blurredPhotoUrl: blurredPhotoUrl || senderPhotoUrl, // Usar a foto desfocada se disponível
+        originalPhotoUrl: senderPhotoUrl,
+        senderName,
+      }
+    };
+    
+    await setDoc(messageRef, messageData);
+    
+    // Enviar notificação para o destinatário
+    try {
+      await addDoc(collection(firestore, COLLECTIONS.NOTIFICATIONS), {
+        userId: recipientId,
+        type: 'message',
+        title: '🎭 Mistério do Campo',
+        body: 'Alguém enviou uma mensagem misteriosa para você!',
+        data: { chatId, type: 'misterio_do_campo' },
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+    } catch (notifError) {
+      console.warn('Erro ao enviar notificação:', notifError);
+    }
+    
+    return { success: true, messageId: messageRef.id };
+  } catch (error) {
+    console.error('Erro ao enviar Mistério do Campo:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    };
+  }
+}
+
+/**
+ * Revela a identidade do remetente de uma mensagem mistério
+ * @param chatId ID do chat
+ * @param messageId ID da mensagem
+ * @param method Como foi revelada: 'paid' (pago) ou 'timer' (24h expirado)
+ */
+export async function revealMisterioIdentity(
+  chatId: string, 
+  messageId: string, 
+  method: 'paid' | 'timer'
+): Promise<boolean> {
+  try {
+    const messageRef = doc(firestore, COLLECTIONS.CHATS, chatId, COLLECTIONS.MESSAGES, messageId);
+    const chatRef = doc(firestore, COLLECTIONS.CHATS, chatId);
+    
+    // Atualizar a mensagem
+    await updateDoc(messageRef, {
+      'misterio.isRevealed': true,
+      'misterio.revealedAt': serverTimestamp(),
+      'misterio.revealMethod': method,
+    });
+    
+    // Atualizar o chat
+    await updateDoc(chatRef, {
+      'misterioData.isRevealed': true,
+      'misterioData.revealedAt': serverTimestamp(),
+      'misterioData.revealMethod': method,
+      updatedAt: serverTimestamp(),
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Erro ao revelar identidade:', error);
+    return false;
+  }
+}
+
+/**
+ * Verifica e revela automaticamente mensagens mistério expiradas
+ * (Pode ser chamado pelo app ou por uma Cloud Function)
+ */
+export async function checkAndRevealExpiredMisterios(userId: string): Promise<number> {
+  try {
+    const now = Timestamp.now();
+    
+    // Buscar chats de mistério do usuário que ainda não foram revelados
+    const q = query(
+      collection(firestore, COLLECTIONS.CHATS),
+      where('participants', 'array-contains', userId),
+      where('origin', '==', 'misterio_do_campo'),
+      where('misterioData.isRevealed', '==', false)
+    );
+    
+    const snapshot = await getDocs(q);
+    let revealedCount = 0;
+    
+    for (const chatDoc of snapshot.docs) {
+      const chatData = chatDoc.data();
+      const expiresAt = chatData.misterioData?.expiresAt;
+      
+      if (expiresAt && expiresAt.toMillis() <= now.toMillis()) {
+        // Buscar mensagens de mistério neste chat
+        const messagesQ = query(
+          collection(firestore, COLLECTIONS.CHATS, chatDoc.id, COLLECTIONS.MESSAGES),
+          where('type', '==', 'misterio'),
+          where('misterio.isRevealed', '==', false)
+        );
+        
+        const messagesSnapshot = await getDocs(messagesQ);
+        
+        for (const msgDoc of messagesSnapshot.docs) {
+          const revealed = await revealMisterioIdentity(chatDoc.id, msgDoc.id, 'timer');
+          if (revealed) revealedCount++;
+        }
+      }
+    }
+    
+    return revealedCount;
+  } catch (error) {
+    console.error('Erro ao verificar mistérios expirados:', error);
+    return 0;
+  }
+}
+
+/**
+ * Obtém mensagens de mistério recebidas pelo usuário
+ */
+export async function getReceivedMisterios(userId: string): Promise<FirebaseChat[]> {
+  try {
+    const q = query(
+      collection(firestore, COLLECTIONS.CHATS),
+      where('participants', 'array-contains', userId),
+      where('origin', '==', 'misterio_do_campo'),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    // Filtrar apenas os chats onde o usuário é o destinatário (não o remetente)
+    return snapshot.docs
+      .map(doc => ({ ...doc.data(), id: doc.id } as FirebaseChat))
+      .filter(chat => {
+        const misterioData = (chat as any).misterioData;
+        return misterioData?.senderId !== userId;
+      });
+  } catch (error) {
+    console.error('Erro ao buscar mistérios recebidos:', error);
+    return [];
+  }
 }
 
 // =============================================================================

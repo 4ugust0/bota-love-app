@@ -109,7 +109,7 @@ export default function OnboardingFinalScreen() {
           <View style={styles.progressBar}>
             <Animated.View style={[styles.progressFill, { width: '100%' }]}>
               <LinearGradient
-                colors={['#FFD700', BotaLoveColors.primary, '#FF69B4']}
+                colors={['#E5C88A', BotaLoveColors.primary, '#B8944D']}
                 style={StyleSheet.absoluteFillObject}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -169,7 +169,7 @@ export default function OnboardingFinalScreen() {
             ]}
           />
           <LinearGradient
-            colors={['#FFD700', BotaLoveColors.primary, '#FF69B4']}
+            colors={['#E5C88A', BotaLoveColors.primary, '#B8944D']}
             style={styles.iconGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -233,7 +233,7 @@ export default function OnboardingFinalScreen() {
                 end={{ x: 1, y: 1 }}
               >
                 <View style={[styles.tipIconCircle, { backgroundColor: 'rgba(255, 215, 0, 0.2)' }]}>
-                  <Ionicons name="star" size={36} color="#FFD700" />
+                  <Ionicons name="star" size={36} color="#D4AD63" />
                 </View>
                 <Text style={styles.tipText}>Experiência única</Text>
                 <Text style={styles.tipDescription}>Recursos exclusivos para o agro</Text>
@@ -257,7 +257,7 @@ export default function OnboardingFinalScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#FFD700', BotaLoveColors.primary, '#FF69B4']}
+              colors={['#E5C88A', BotaLoveColors.primary, '#B8944D']}
               style={styles.finishButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: '#FFD700',
+    backgroundColor: '#D4AD63',
   },
   iconGradient: {
     width: 200,
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   finishButton: {
     borderRadius: 32,
     overflow: 'hidden',
-    shadowColor: '#FFD700',
+    shadowColor: '#D4AD63',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.8,
     shadowRadius: 24,

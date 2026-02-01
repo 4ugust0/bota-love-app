@@ -23,6 +23,7 @@ import {
     incrementLikeCount,
     incrementMessageCount,
     incrementViewCount,
+    initUserFreePlanState,
     ProfileVisibility
 } from '@/data/freePlanService';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
@@ -134,6 +135,10 @@ export function FreePlanProvider({ children }: { children: ReactNode }) {
   const refreshState = useCallback(() => {
     if (!currentUser?.id) return;
     
+    // Inicializar estado com data de registro do Firebase
+    const registrationDate = currentUser.createdAt?.toDate?.() || new Date();
+    initUserFreePlanState(currentUser.id, registrationDate);
+    
     const info = getUserPeriodInfo(currentUser.id);
     setPlanState({
       period: info.period,
@@ -143,7 +148,7 @@ export function FreePlanProvider({ children }: { children: ReactNode }) {
       viewsInfo: getViewsInfo(currentUser.id),
       likesInfo: getLikesInfo(currentUser.id),
     });
-  }, [currentUser?.id]);
+  }, [currentUser?.id, currentUser?.createdAt]);
   
   // Atualizar quando usuário muda
   useEffect(() => {

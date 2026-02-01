@@ -1,0 +1,2697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação Técnica - Bota Love App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            color: #1F130C;
+            background: #FFFFFF;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* Capa */
+        .cover {
+            page-break-after: always;
+            text-align: center;
+            padding: 100px 0;
+            border-bottom: 3px solid #F9A825;
+            margin-bottom: 40px;
+        }
+        
+        .cover h1 {
+            font-size: 36px;
+            color: #502914;
+            margin: 20px 0;
+            font-weight: 700;
+        }
+        
+        .cover .subtitle {
+            font-size: 20px;
+            color: #663C23;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .cover .meta {
+            font-size: 12px;
+            color: #7A5841;
+            margin-top: 60px;
+            line-height: 1.8;
+        }
+        
+        /* Headers */
+        h1 {
+            font-size: 28px;
+            color: #502914;
+            margin: 40px 0 20px 0;
+            font-weight: 700;
+            border-bottom: 3px solid #F9A825;
+            padding-bottom: 10px;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            font-size: 22px;
+            color: #663C23;
+            margin: 30px 0 15px 0;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            font-size: 16px;
+            color: #7A5841;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+            page-break-after: avoid;
+        }
+        
+        h4 {
+            font-size: 14px;
+            color: #502914;
+            margin: 15px 0 8px 0;
+            font-weight: 600;
+            page-break-after: avoid;
+        }
+        
+        /* Parágrafo */
+        p {
+            margin: 12px 0;
+            text-align: justify;
+            hyphens: auto;
+        }
+        
+        /* Listas */
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        ul li, ol li {
+            margin: 8px 0;
+        }
+        
+        ul li strong, ol li strong {
+            color: #502914;
+        }
+        
+        /* Links */
+        a {
+            color: #F9A825;
+            text-decoration: none;
+            border-bottom: 1px dotted #F9A825;
+        }
+        
+        a:hover {
+            color: #F57C00;
+        }
+        
+        /* Código */
+        code {
+            background: #FFF9E6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            color: #502914;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            border-left: 4px solid #F9A825;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 11px;
+            line-height: 1.4;
+            page-break-inside: avoid;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+            color: #1F130C;
+        }
+        
+        /* Blockquote */
+        blockquote {
+            border-left: 4px solid #F9A825;
+            margin: 15px 0;
+            padding-left: 15px;
+            color: #663C23;
+            font-style: italic;
+        }
+        
+        /* Tabelas */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        th {
+            background: #F9A825;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            border: 1px solid #f0f0f0;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        tr:nth-child(even) {
+            background: #FFF9E6;
+        }
+        
+        /* Linha horizontal */
+        hr {
+            border: none;
+            height: 2px;
+            background: #F9A825;
+            margin: 30px 0;
+        }
+        
+        /* Índice */
+        .toc {
+            page-break-after: always;
+            background: #FFF9E6;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .toc h2 {
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            margin: 0;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+            color: #502914;
+        }
+        
+        /* Boxes especiais */
+        .note {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        
+        .warning {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        
+        .success {
+            background: #E8F5E9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 80px;
+            padding-top: 20px;
+            border-top: 2px solid #F9A825;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            page-break-before: always;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        /* Print */
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            a {
+                color: #F9A825;
+            }
+            
+            h1, h2, h3, h4 {
+                page-break-after: avoid;
+            }
+            
+            table, ul, ol, pre {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="cover">
+        <h1>DOCUMENTAÇÃO TÉCNICA</h1>
+        <div class="subtitle">Validação do Aplicativo Mobile Bota Love</div>
+        <div class="meta">
+            <p><strong>Versão:</strong> 1.0.0</p>
+            <p><strong>Data:</strong> 01 de Fevereiro de 2026</p>
+            <p><strong>Status:</strong> Produção</p>
+            <p><strong>Classificação:</strong> Documentação Técnica - Validação Contratual</p>
+        </div>
+    </div>
+    
+<h1>DOCUMENTAÇÃO TÉCNICA PARA VALIDAÇÃO DO APLICATIVO MOBILE BOTA LOVE</h1>
+<p><strong>Versão:</strong> 1.0.0</p>
+<p><strong>Data:</strong> Fevereiro 2026</p>
+<p><strong>Autor:</strong> Bota Love Team</p>
+<p><strong>Classificação:</strong> Documentação Técnica - Validação Contratual</p>
+<hr>
+<h2>📋 ÍNDICE</h2>
+<p>1. <a href="#resumo-executivo">Resumo Executivo</a></p>
+<p>2. <a href="#lista-completa-de-funcionalidades">Lista Completa de Funcionalidades</a></p>
+<p>3. <a href="#arquitetura-do-sistema">Arquitetura do Sistema</a></p>
+<p>4. <a href="#descrição-detalhada-das-funcionalidades">Descrição Detalhada das Funcionalidades</a></p>
+<p>5. <a href="#banco-de-dados-firebase">Banco de Dados Firebase</a></p>
+<p>6. <a href="#cloud-functions---endpoints">Cloud Functions - Endpoints</a></p>
+<p>7. <a href="#fluxos-e-telas-do-aplicativo">Fluxos e Telas do Aplicativo</a></p>
+<p>8. <a href="#componentes-e-ativos-técnicos">Componentes e Ativos Técnicos</a></p>
+<p>9. <a href="#stack-tecnológico">Stack Tecnológico</a></p>
+<p>10. <a href="#segurança-e-regras-firestore">Segurança e Regras Firestore</a></p>
+<hr>
+<h2>📌 RESUMO EXECUTIVO</h2>
+<p>O <strong>Bota Love App</strong> é um aplicativo mobile de relacionamentos focado no público rural e agro brasileiro. Desenvolvido com <em></em>React Native (Expo)** e **Firebase** como backend completo, o aplicativo oferece um conjunto robusto de funcionalidades para conectar profissionais do setor agropecuário.</p>
+<h3>Período de Desenvolvimento</h3>
+<ul>
+<li><strong>Início:</strong> Janeiro 2026</li>
+<ul>
+<li><strong>Conclusão:</strong> Fevereiro 2026</li>
+<ul>
+<li><strong>Versão:</strong> 1.0.0 (Produção)</li>
+</ul>
+<h3>Plataformas Suportadas</h3>
+<ul>
+<li>✅ iOS (Apple)</li>
+<ul>
+<li>✅ Android (Google)</li>
+<ul>
+<li>✅ Web (Progressive Web App)</li>
+</ul>
+<h3>Tecnologias Principais</h3>
+<ul>
+<li><strong>Frontend:</strong> React Native 0.81.5 + Expo 54.0.31 + TypeScript 5.9.2</li>
+<ul>
+<li><strong>Backend:</strong> Firebase (Auth, Firestore, Storage, Cloud Functions)</li>
+<ul>
+<li><strong>Pagamentos:</strong> Stripe PIX</li>
+<ul>
+<li><strong>Notificações:</strong> Firebase Cloud Messaging</li>
+</ul>
+<hr>
+<h2>📋 LISTA COMPLETA DE FUNCIONALIDADES</h2>
+<h3>**MÓDULO 1: AUTENTICAÇÃO E CADASTRO**</h3>
+<p>1. Registro de novo usuário com email</p>
+<p>2. Verificação de email via código</p>
+<p>3. Login com email e senha</p>
+<p>4. Recuperação de senha</p>
+<p>5. Logout</p>
+<p>6. Gerenciamento de sessão</p>
+<p>7. Renovação de token</p>
+<h3>**MÓDULO 2: GERENCIAMENTO DE PERFIL**</h3>
+<p>1. Criação de perfil completo</p>
+<p>2. Edição de informações básicas (nome, data nascimento, gênero)</p>
+<p>3. Upload de fotos (múltiplas)</p>
+<p>4. Escrita de bio/descrição pessoal</p>
+<p>5. Seleção de objetivos de relacionamento</p>
+<p>6. Configuração de preferências de gênero</p>
+<p>7. Detalhes profissionais (ocupação, áreas agrícolas)</p>
+<p>8. Verificação de perfil</p>
+<p>9. Pré-visualização de perfil</p>
+<h3>**MÓDULO 3: DESCOBERTA E MATCHES**</h3>
+<p>1. Feed de descoberta com cards deslizáveis</p>
+<p>2. Like em perfil</p>
+<p>3. Super Like (com notificação especial)</p>
+<p>4. Rejeição de perfil (Pass)</p>
+<p>5. Detecção automática de match (like mútuo)</p>
+<p>6. Criação automática de chat ao fazer match</p>
+<p>7. Visualização de quem curtiu você</p>
+<p>8. Gerenciamento de matches (ativo/inativo)</p>
+<p>9. Desfazer match (unmatch)</p>
+<h3>**MÓDULO 4: FILTROS E PREFERÊNCIAS**</h3>
+<p>1. Filtros básicos (idade, distância, localização)</p>
+<p>2. Filtros avançados (profissões, atividades rurais, animais)</p>
+<p>3. Salvamento de preferências</p>
+<p>4. Aplicação em tempo real</p>
+<p>5. Sugestão de filtros inteligentes</p>
+<p>6. Filtro por verificação de perfil</p>
+<p>7. Filtro por presença de fotos</p>
+<p>8. Filtro por características rurais</p>
+<h3>**MÓDULO 5: CHAT E MENSAGENS**</h3>
+<p>1. Conversas em tempo real</p>
+<p>2. Envio de mensagens de texto</p>
+<p>3. Suporte a múltiplos tipos de mensagens (texto, imagem)</p>
+<p>4. Status de leitura de mensagens</p>
+<p>5. Histórico de conversas persistente</p>
+<p>6. Busca em conversas</p>
+<p>7. Notificações de novas mensagens</p>
+<p>8. Bloqueio de usuários</p>
+<p>9. Moderação de conteúdo em mensagens</p>
+<p>10. Lembretes de inatividade</p>
+<p>11. Presença online/offline</p>
+<h3>**MÓDULO 6: SYSTEM DE PLANOS E ASSINATURAS**</h3>
+<p>1. Plano Gratuito com limites progressivos</p>
+<p>- Dia 1: Acesso ilimitado (onboarding)</p>
+<p>- Dias 2-7: 120 views, 25 likes, 1 msg/match</p>
+<p>- Dias 8-10: 50 views, 25 likes, 1 msg/match</p>
+<p>- Dias 11-14: 20 views, 15 likes, 0 msg (leitura)</p>
+<p>- Após mês: 10 views, 10 likes, 0 msg (leitura)</p>
+<p>- 2+ meses: 5 views, 5 likes, 0 msg (leitura)</p>
+<p>2. Premium Mensal</p>
+<p>- Acesso ilimitado a descoberta</p>
+<p>- Mensagens ilimitadas</p>
+<p>- Filtros avançados</p>
+<p>- Boost de perfil</p>
+<p>- Visibilidade de quem curtiu</p>
+<p>3. Premium Trimestral</p>
+<p>- Todos os benefícios mensais</p>
+<p>- Desconto de preço</p>
+<p>4. Premium Anual</p>
+<p>- Todos os benefícios mensais</p>
+<p>- Melhor desconto de preço</p>
+<p>5. Network Rural (Monthly)</p>
+<p>- Acesso a rede profissional</p>
+<p>- Conexões com profissionais agrícolas</p>
+<p>- Chat dedicado para networking</p>
+<p>6. Network Rural (Lifetime)</p>
+<p>- Acesso permanente</p>
+<p>- Todas as features do Network</p>
+<h3>**MÓDULO 7: EVENTOS AGRO**</h3>
+<p>1. Listagem de eventos (rodeios, feiras, shows, congressos)</p>
+<p>2. Criação de eventos (produtores)</p>
+<p>3. Edição de eventos próprios</p>
+<p>4. Deletar eventos</p>
+<p>5. Detalhes do evento (data, local, descrição)</p>
+<p>6. Indicar interesse em evento</p>
+<p>7. Confirmar presença</p>
+<p>8. Visualizar estatísticas de evento</p>
+<p>9. Publicação com duração configurável (15, 30, 60, 90 dias)</p>
+<p>10. Destaque de eventos (com custo adicional)</p>
+<p>11. Busca e filtro de eventos por tipo</p>
+<h3>**MÓDULO 8: NETWORK RURAL**</h3>
+<p>1. Perfil para networking profissional</p>
+<p>2. Busca de profissionais do agro</p>
+<p>3. Filtro por área de atuação</p>
+<p>4. Integração com LinkedIn</p>
+<p>5. Conexão profissional (3 tipos: profissional, negócio, mentoria)</p>
+<p>6. Chat dedicado para network</p>
+<p>7. Estatísticas de conexões</p>
+<p>8. Recomendações profissionais</p>
+<h3>**MÓDULO 9: LOJA VIRTUAL**</h3>
+<p>1. Compra de Super Likes avulsos</p>
+<p>2. Compra de Boosts (Assobios do Peão)</p>
+<p>3. Histórico de compras</p>
+<p>4. Carrinho de compras</p>
+<p>5. Checkout integrado</p>
+<h3>**MÓDULO 10: NOTIFICAÇÕES**</h3>
+<p>1. Push notifications (iOS/Android)</p>
+<p>2. Notificações de novo match</p>
+<p>3. Notificações de like recebido</p>
+<p>4. Notificações de super like</p>
+<p>5. Notificações de nova mensagem</p>
+<p>6. Notificações de evento interessante</p>
+<p>7. Notificações de assinatura expirando</p>
+<p>8. Configuração de preferências de notificação</p>
+<h3>**MÓDULO 11: MODERAÇÃO E SEGURANÇA**</h3>
+<p>1. Moderação de perfis (fotos, bio)</p>
+<p>2. Moderação de mensagens (conteúdo impróprio)</p>
+<p>3. Bloqueio de usuários</p>
+<p>4. Report de usuários</p>
+<p>5. Banimento de contas</p>
+<p>6. Auditoria de ações</p>
+<p>7. Verificação de email obrigatória</p>
+<h3>**MÓDULO 12: CONFIGURAÇÕES**</h3>
+<p>1. Configuração de notificações push</p>
+<p>2. Privacidade de perfil (mostrar/esconder)</p>
+<p>3. Gerenciamento de preferências de descoberta</p>
+<p>4. Alteração de senha</p>
+<p>5. Logout</p>
+<p>6. Deleção de conta</p>
+<p>7. Baixar dados pessoais (LGPD)</p>
+<h3>**MÓDULO 13: ESPECIAL - CORREIO DA ROÇA**</h3>
+<p>1. Envio de mensagens anônimas (pendente de aceite)</p>
+<p>2. Aceitação/rejeição de mensagens anônimas</p>
+<p>3. Revelação de identidade (automática após 24h)</p>
+<p>4. Criação de match após aceitar</p>
+<h3>**MÓDULO 14: ONBOARDING**</h3>
+<p>1. Splash screen</p>
+<p>2. Seleção de gênero</p>
+<p>3. Seleção de orientação sexual</p>
+<p>4. Seleção de objetivos relacionais</p>
+<p>5. Seleção de "o que você procura aqui"</p>
+<p>6. Upload de fotos de perfil</p>
+<p>7. Preenchimento de dados pessoais</p>
+<p>8. Confirmação de termos e condições</p>
+<p>9. Conclusão do onboarding</p>
+<hr>
+<h2>🏗️ ARQUITETURA DO SISTEMA</h2>
+<h3>Diagrama Geral</h3>
+<pre><code>
+┌─────────────────────────────────────────────────────────────────────┐
+│                        BOTA LOVE APP                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │              FRONTEND - React Native (Expo)                  │   │
+│  │  ├─ Telas (File-based routing)                             │   │
+│  │  ├─ Componentes reutilizáveis                             │   │
+│  │  ├─ Gerenciamento de estado (Context API)                │   │
+│  │  ├─ Hooks customizados                                    │   │
+│  │  └─ Tema e estilização                                    │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                           ↓                                           │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │           FIREBASE - Backend as a Service                    │   │
+│  │  ├─ Authentication (Email/Password)                         │   │
+│  │  ├─ Firestore (NoSQL Database)                             │   │
+│  │  ├─ Storage (Imagens de perfil)                            │   │
+│  │  ├─ Cloud Functions (Lógica serverless)                    │   │
+│  │  ├─ Cloud Messaging (Push notifications)                   │   │
+│  │  └─ Security Rules (Controle de acesso)                    │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                           ↓                                           │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │        INTEGRAÇÕES EXTERNAS                                 │   │
+│  │  ├─ Stripe (Pagamentos PIX)                                │   │
+│  │  ├─ LinkedIn (Verificação profissional)                    │   │
+│  │  ├─ SendGrid (Email)                                       │   │
+│  │  └─ Google Cloud Vision (Moderação de imagens)             │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3>Stack Tecnológico Detalhado</h3>
+<h4>Frontend</h4>
+<ul>
+<li><strong>Runtime:</strong> Expo 54.0.31</li>
+<ul>
+<li><strong>Framework:</strong> React Native 0.81.5</li>
+<ul>
+<li><strong>Linguagem:</strong> TypeScript 5.9.2</li>
+<ul>
+<li><strong>Roteamento:</strong> Expo Router 6.0.21</li>
+<ul>
+<li><strong>UI:</strong> React Native com tema customizado</li>
+<ul>
+<li><strong>Animações:</strong> React Native Reanimated 4.1.1</li>
+<ul>
+<li><strong>Gestos:</strong> React Native Gesture Handler 2.28.0</li>
+</ul>
+<h4>Backend</h4>
+<ul>
+<li><strong>Autenticação:</strong> Firebase Auth</li>
+<ul>
+<li><strong>Banco de Dados:</strong> Firestore (NoSQL)</li>
+<ul>
+<li><strong>Armazenamento:</strong> Firebase Storage</li>
+<ul>
+<li><strong>Funções:</strong> Cloud Functions v2</li>
+<ul>
+<li><strong>Notificações:</strong> Firebase Cloud Messaging</li>
+<ul>
+<li><strong>Região:</strong> South America East (GCP - Brasil)</li>
+</ul>
+<h4>Dependências Críticas</h4>
+<ul>
+<li><code>firebase@^12.7.0</code> - SDK Firebase</li>
+<ul>
+<li><code>@react-native-firebase/<em>@^23.7.0</code> - Firebase para React Native</li>
+<ul>
+<li><code>expo-image-picker@~17.0.10</code> - Seleção de imagens</li>
+<ul>
+<li><code>expo-location@~19.0.8</code> - Localização GPS</li>
+<ul>
+<li><code>expo-notifications@~0.32.16</code> - Notificações locais</li>
+<ul>
+<li><code>date-fns@^3.6.0</code> - Manipulação de datas</li>
+</ul>
+<h4>Serviços Terceirizados</h4>
+<ul>
+<li><strong>Stripe:</strong> Pagamentos via PIX</li>
+<ul>
+<li><strong>LinkedIn:</strong> Autenticação e verificação profissional</li>
+<ul>
+<li><strong>SendGrid:</strong> Envio de emails transacionais</li>
+<ul>
+<li><strong>Google Cloud Vision:</strong> Moderação de imagens</li>
+</ul>
+<hr>
+<h2>📖 DESCRIÇÃO DETALHADA DAS FUNCIONALIDADES</h2>
+<h3>1. AUTENTICAÇÃO E CADASTRO</h3>
+<h4>Finalidade</h4>
+<p>Permitir que novos usuários se registrem de forma segura e usuários existentes façam login, garantindo a verificação de identidade através de validação de email.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Registro (Sign Up)</strong></p>
+<p>- Usuário insere email e cria senha</p>
+<p>- Sistema envia código de verificação por email</p>
+<p>- Usuário digita código para confirmar propriedade do email</p>
+<p>- Conta é criada no Firebase Auth</p>
+<p>- Documento de usuário é criado no Firestore</p>
+<p>2. <strong>Login</strong></p>
+<p>- Usuário insere email e senha</p>
+<p>- Firebase Auth valida credenciais</p>
+<p>- Sessão é iniciada</p>
+<p>- Dados do usuário são carregados do Firestore</p>
+<p>3. <strong>Recuperação de Senha</strong></p>
+<p>- Usuário solicita reset de senha</p>
+<p>- Sistema envia código por email</p>
+<p>- Usuário digita novo código e define nova senha</p>
+<p>- Senha é atualizada no Firebase Auth</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firebase Auth:</strong> Autenticação e gerenciamento de credenciais</li>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de dados de usuário</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Envio de emails de verificação (SendGrid)</li>
+<ul>
+<li><strong>SendGrid:</strong> Serviço de email</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ authService.ts (registerUser, loginUser, resetPassword, etc)
+  ├─ config.ts (Configuração Firebase)
+  └─ types.ts (Tipos: FirebaseUser, LoginResult)
+
+functions/src/auth/
+  ├─ sendVerificationEmail.ts
+  ├─ verifyEmailCode.ts
+  ├─ sendPasswordResetCode.ts
+  └─ resetPassword.ts
+
+contexts/
+  └─ AuthContext.tsx (Gerenciamento de estado de autenticação)
+</code></pre>
+<hr>
+<h3>2. GERENCIAMENTO DE PERFIL</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários criem, editem e exibam um perfil completo com informações pessoais, profissionais e de preferências.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Criação de Perfil</strong></p>
+<p>- Usuário preenche dados básicos (nome, data de nascimento, gênero)</p>
+<p>- Upload de fotos de perfil (máx 6 fotos)</p>
+<p>- Bio pessoal (descrição)</p>
+<p>- Informações profissionais (ocupação, áreas agrícolas)</p>
+<p>- Preferências de relacionamento</p>
+<p>2. <strong>Edição de Perfil</strong></p>
+<p>- Usuário pode editar qualquer campo de seu perfil</p>
+<p>- Alterações são salvas em tempo real no Firestore</p>
+<p>- Fotos podem ser adicionadas, removidas ou reordenadas</p>
+<p>3. <strong>Visualização de Perfil</strong></p>
+<p>- Outros usuários podem visualizar o perfil (com restrições por plano)</p>
+<p>- Usuário vê seu próprio perfil completo</p>
+<p>- Sistema exibe informações conforme visibilidade de perfil</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de dados de perfil</li>
+<ul>
+<li><strong>Firebase Storage:</strong> Armazenamento de imagens</li>
+<ul>
+<li><strong>Google Cloud Vision:</strong> Moderação de imagens (conteúdo impróprio)</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ firestoreService.ts (updateUserProfile, updatePhotos)
+  └─ storageService.ts (Upload de imagens)
+
+data/
+  ├─ freePlanService.ts (Visibilidade conforme plano)
+  └─ bioValidationService.ts (Validação de bio)
+
+contexts/
+  └─ AuthContext.tsx (updateProfile, updatePhotos)
+</code></pre>
+<hr>
+<h3>3. DESCOBERTA E MATCHES</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários descubram potenciais parceiros através de um feed interativo e façam matches (relacionamentos) através de likes mútuos.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Feed de Descoberta</strong></p>
+<p>- Sistema exibe cards de usuários potenciais</p>
+<p>- Ordem baseada em: proximidade, compatibilidade de filtros</p>
+<p>- Usuário pode: Like, Super Like ou Pass (rejeitar)</p>
+<p>- Máximo de 50 usuários por carregamento</p>
+<p>2. <strong>Sistema de Likes</strong></p>
+<p>- <strong>Like Normal:</strong> Indica interesse em um usuário</p>
+<p>- <strong>Super Like:</strong> Like com destaque especial (notificação diferente)</p>
+<p>- <strong>Pass:</strong> Rejeita usuário por tempo determinado</p>
+<p>3. <strong>Detecção de Match</strong></p>
+<p>- Se dois usuários dão like um no outro: MATCH! 🎉</p>
+<p>- Chat é criado automaticamente</p>
+<p>- Ambos recebem notificação de match</p>
+<p>- Conversa pode começar imediatamente</p>
+<p>4. <strong>Gerenciamento de Matches</strong></p>
+<p>- Usuário vê lista de matches</p>
+<p>- Pode desativar match (unmatch)</p>
+<p>- Pode bloquear usuário</p>
+<p>- Histórico de matches permanece</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de likes, matches, passes</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Notificação de match</li>
+<ul>
+<li><strong>Cloud Messaging:</strong> Push notifications</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ matchService.ts (likeUser, superLikeUser, passUser, unmatch)
+  ├─ discoveryService.ts (getDiscoveryFeed, calcularDistância)
+  └─ types.ts (FirebaseLike, FirebaseMatch)
+
+hooks/
+  └─ useDiscoveryFeed.ts (Lógica do feed)
+
+functions/src/notifications/
+  └─ sendMatchNotification.ts (Notifica match)
+</code></pre>
+<hr>
+<h3>4. FILTROS E PREFERÊNCIAS</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários refinarem sua descoberta através de filtros avançados, garantindo maior compatibilidade e interesse mútuo.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Filtros Básicos</strong></p>
+<p>- Faixa etária (mín/máx)</p>
+<p>- Raio de distância (km)</p>
+<p>- Localização (estado/cidade)</p>
+<p>- Preferência de gênero (homens, mulheres, ambos)</p>
+<p>2. <strong>Filtros Avançados</strong></p>
+<p>- Profissão</p>
+<p>- Atividades rurais</p>
+<p>- Tamanho de propriedade</p>
+<p>- Animais que possui</p>
+<p>- Educação</p>
+<p>- Filhos</p>
+<p>- Interesses</p>
+<p>- Estilo musical</p>
+<p>3. <strong>Aplicação em Tempo Real</strong></p>
+<p>- Filtros são salvos automaticamente</p>
+<p>- Feed atualiza com novos critérios</p>
+<p>- Sem necessidade de reload</p>
+<p>4. <strong>Inteligência</strong></p>
+<p>- Sistema sugere filtros baseado em padrões</p>
+<p>- Detecta filtros muito restritivos</p>
+<p>- Oferece expansão de filtros</p>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ discoveryService.ts (Aplicação de filtros)
+  └─ types.ts (DiscoverySettings)
+
+contexts/
+  └─ AuthContext.tsx (updateDiscoverySettings)
+
+components/
+  ├─ LockedFilter.tsx (Filtros bloqueados para gratuito)
+  └─ advanced-filters.tsx (Tela de filtros avançados)
+</code></pre>
+<hr>
+<h3>5. CHAT E MENSAGENS</h3>
+<h4>Finalidade</h4>
+<p>Permitir comunicação em tempo real entre usuários que fizeram match, com suporte a múltiplos tipos de conteúdo e moderação.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Envio de Mensagens</strong></p>
+<p>- Usuário digita mensagem</p>
+<p>- Clica enviar</p>
+<p>- Mensagem é armazenada no Firestore</p>
+<p>- Receptor recebe em tempo real</p>
+<p>- Status: enviado → entregue → lido</p>
+<p>2. <strong>Tipos de Mensagens</strong></p>
+<p>- Texto simples</p>
+<p>- Imagens</p>
+<p>- Áudio (planejado)</p>
+<p>- Mensagens de sistema</p>
+<p>3. <strong>Moderação</strong></p>
+<p>- Mensagens são analisadas automaticamente</p>
+<p>- Sistema detecta palavras impróprias</p>
+<p>- Conteúdo impróprio é filtrado/bloqueado</p>
+<p>- Histórico de moderação é registrado</p>
+<p>4. <strong>Gerenciamento de Conversas</strong></p>
+<p>- Histórico persistente</p>
+<p>- Busca em conversas</p>
+<p>- Marcar como lida</p>
+<p>- Bloqueio de usuário</p>
+<p>- Lembretes de inatividade</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de chats e mensagens</li>
+<ul>
+<li><strong>Firebase Storage:</strong> Armazenamento de imagens em mensagens</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Moderação de conteúdo, notificações</li>
+<ul>
+<li><strong>Advanced Moderation Service:</strong> Análise de conteúdo</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ chatService.ts (CRUD de chats e mensagens)
+  └─ types.ts (FirebaseChat, FirebaseMessage)
+
+hooks/
+  └─ useChat.ts (Lógica de chat)
+
+services/
+  └─ advancedModerationService.ts (Moderação)
+
+functions/src/
+  ├─ notifications/sendMessageNotification.ts
+  └─ moderation/moderateMessage.ts
+</code></pre>
+<hr>
+<h3>6. SISTEMA DE PLANOS E ASSINATURAS</h3>
+<h4>Finalidade</h4>
+<p>Oferecer diferentes níveis de acesso (Gratuito, Premium, Network Rural) com monetização clara e limites justos.</p>
+<h4>Funcionamento</h4>
+<p><strong>PLANO GRATUITO (Freemium)</strong></p>
+<p>Evolui em períodos com limites progressivos:</p>
+<p><strong>PLANO PREMIUM</strong></p>
+<ul>
+<li>Acesso ilimitado a descoberta (views e likes)</li>
+<ul>
+<li>Mensagens ilimitadas com matches</li>
+<ul>
+<li>Filtros avançados sem restrição</li>
+<ul>
+<li>Boost de perfil (aparece em destaque)</li>
+<ul>
+<li>Ver quem curtiu você</li>
+<ul>
+<li>Cancelamento a qualquer momento</li>
+</ul>
+<p>Opções de duração:</p>
+<ul>
+<li>Mensal: R$ 49,90</li>
+<ul>
+<li>Trimestral: R$ 119,90 (desconto de ~20%)</li>
+<ul>
+<li>Anual: R$ 349,90 (desconto de ~30%)</li>
+</ul>
+<p><strong>PLANO NETWORK RURAL</strong></p>
+<p>Acesso à rede profissional de agropecuaristas:</p>
+<ul>
+<li>Networking com profissionais do agro</li>
+<ul>
+<li>Busca avançada por áreas de atuação</li>
+<ul>
+<li>Integração com LinkedIn</li>
+<ul>
+<li>Chat dedicado para networking</li>
+<ul>
+<li>Recomendações profissionais</li>
+</ul>
+<p>Opções:</p>
+<ul>
+<li>Mensal: R$ 29,90</li>
+<ul>
+<li>Lifetime (vitalício): R$ 199,90</li>
+</ul>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de assinaturas</li>
+<ul>
+<li><strong>Stripe:</strong> Processamento de pagamentos PIX</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Validação de pagamento, criação de assinatura</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ subscriptionService.ts (Gerenciamento de assinaturas)
+  ├─ stripeService.ts (Integração Stripe)
+  └─ types.ts (SubscriptionPlan, UserSubscription)
+
+data/
+  └─ freePlanService.ts (Lógica de limites do gratuito)
+
+contexts/
+  ├─ AuthContext.tsx (Ações de subscription)
+  └─ FreePlanContext.tsx (Limites e conversão)
+
+functions/src/stripe/
+  ├─ createPixPayment.ts
+  ├─ getPixPaymentStatus.ts
+  └─ stripeWebhook.ts
+</code></pre>
+<hr>
+<h3>7. EVENTOS AGRO</h3>
+<h4>Finalidade</h4>
+<p>Permitir que produtores rurais publiquem eventos e que usuários descubram eventos de interesse (rodeios, feiras, shows, etc).</p>
+<h4>Funcionamento</h4>
+<p><strong>Para Usuários Comuns</strong></p>
+<p>1. Acessam aba de Eventos</p>
+<p>2. Veem listagem de eventos ativos</p>
+<p>3. Filtram por tipo (rodeio, feira, show, etc)</p>
+<p>4. Clicam em evento para detalhes</p>
+<p>5. Podem indicar interesse ou confirmar presença</p>
+<p>6. Recebem notificação quando evento se aproxima</p>
+<p><strong>Para Produtores</strong></p>
+<p>1. Acessam "Criar Evento"</p>
+<p>2. Preenchem formulário:</p>
+<p>- Título</p>
+<p>- Descrição</p>
+<p>- Tipo (rodeio, feira, show, congresso, etc)</p>
+<p>- Data e hora</p>
+<p>- Local (endereço, cidade, estado)</p>
+<p>- Capacidade</p>
+<p>- Preço de entrada (opcional)</p>
+<p>3. Escolhem duração de publicação:</p>
+<p>- 15 dias: R$ 49,90</p>
+<p>- 30 dias: R$ 79,90</p>
+<p>- 60 dias: R$ 129,90</p>
+<p>- 90 dias: R$ 179,90</p>
+<p>4. Opcionalmente, destacam evento:</p>
+<p>- 15 dias de destaque: R$ 29,90</p>
+<p>- 30 dias de destaque: R$ 49,90</p>
+<p>- 60 dias de destaque: R$ 89,90</p>
+<p>- 90 dias de destaque: R$ 129,90</p>
+<p>5. Finalizando checkout com PIX</p>
+<p>6. Evento fica ativo conforme duração</p>
+<p>7. Recebem notificações de interesse e confirmações</p>
+<p><strong>Metrificação</strong></p>
+<ul>
+<li>Visualizações</li>
+<ul>
+<li>Usuários interessados</li>
+<ul>
+<li>Confirmações de presença</li>
+<ul>
+<li>Alcance geográfico</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ eventService.ts (CRUD de eventos)
+  └─ types.ts (FirebaseEvent)
+
+app/(tabs)/
+  ├─ events.tsx (Listagem de eventos)
+  ├─ create-event.tsx (Criação)
+  └─ event-history.tsx (Histórico do produtor)
+
+functions/src/stripe/
+  └─ Pagamentos de eventos
+</code></pre>
+<hr>
+<h3>8. NETWORK RURAL</h3>
+<h4>Finalidade</h4>
+<p>Conectar profissionais do setor agropecuário para networking, oportunidades de negócios e mentoria.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Ativar Network</strong></p>
+<p>- Usuário habilita Network Rural em seu perfil</p>
+<p>- Informa áreas de atuação</p>
+<p>- Define objetivos (parcerias, mentoria, etc)</p>
+<p>- Indica o que procura</p>
+<p>2. <strong>Busca de Profissionais</strong></p>
+<p>- Sistema filtra usuários com Network ativo</p>
+<p>- Filtros por: áreas, profissão, localização, LinkedIn</p>
+<p>3. <strong>Conexão</strong></p>
+<p>- Usuário envia pedido de conexão</p>
+<p>- Outro usuário aceita/rejeita</p>
+<p>- Se aceito: chat é criado automaticamente</p>
+<p>4. <strong>Chat de Network</strong></p>
+<p>- Igual ao chat de matches</p>
+<p>- Mensagens não expiram</p>
+<p>- Suporta compartilhamento de perfil</p>
+<p>5. <strong>LinkedIn Integration</strong></p>
+<p>- Usuários podem conectar perfil do LinkedIn</p>
+<p>- Verificação profissional automática</p>
+<p>- Dados do LinkedIn são sincronizados</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de conexões</li>
+<ul>
+<li><strong>LinkedIn API:</strong> Verificação profissional</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Notificações de conexão</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ networkRuralFirebaseService.ts
+  ├─ linkedinService.ts
+  └─ types.ts (NetworkConnection, LinkedInProfile)
+
+app/(tabs)/
+  └─ network-rural.tsx
+</code></pre>
+<hr>
+<h3>9. LOJA VIRTUAL</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários comprem itens para melhorar sua experiência no app (Super Likes, Boosts).</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Itens Disponíveis</strong></p>
+<p>- Super Likes avulsos (5, 10, 20 unidades)</p>
+<p>- Boosts (Assobios do Peão) (1, 3, 5 unidades)</p>
+<p>2. <strong>Compra</strong></p>
+<p>- Usuário seleciona item</p>
+<p>- Clica em comprar</p>
+<p>- Sistema redireciona para checkout PIX</p>
+<p>- Após confirmação, itens são adicionados ao inventário</p>
+<p>3. <strong>Uso</strong></p>
+<p>- Super Like: Gasta 1 super like, dá destaque especial</p>
+<p>- Boost: Ativa boost por 24h, perfil fica em destaque</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Stripe:</strong> Pagamentos</li>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de inventário</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Confirmação de compra</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ storeItemsService.ts
+  └─ types.ts (UserInventory)
+
+app/(tabs)/
+  └─ store.tsx
+</code></pre>
+<hr>
+<h3>10. NOTIFICAÇÕES</h3>
+<h4>Finalidade</h4>
+<p>Manter usuários engajados informando-os sobre eventos importantes em tempo real.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Tipos de Notificação</strong></p>
+<p>- Novo match</p>
+<p>- Novo like recebido</p>
+<p>- Super like recebido</p>
+<p>- Nova mensagem</p>
+<p>- Evento de interesse se aproximando</p>
+<p>- Assinatura expirando</p>
+<p>- Assinatura expirada</p>
+<p>2. <strong>Entrega</strong></p>
+<p>- Push notification (iOS/Android)</p>
+<p>- Notificação in-app</p>
+<p>- Email (configurável)</p>
+<p>3. <strong>Personalização</strong></p>
+<p>- Usuário ativa/desativa por tipo</p>
+<p>- Configura horários de notificação</p>
+<p>- Silencia para período específico</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firebase Cloud Messaging:</strong> Entrega de notificações</li>
+<ul>
+<li><strong>Expo Notifications:</strong> Notificações locais</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Triggers para envio</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ notificationService.ts
+  └─ types.ts (FirebaseNotification)
+
+functions/src/notifications/
+  ├─ sendMatchNotification.ts
+  ├─ sendLikeNotification.ts
+  └─ sendMessageNotification.ts
+
+contexts/
+  └─ AuthContext.tsx (notificationSettings)
+</code></pre>
+<hr>
+<h3>11. MODERAÇÃO E SEGURANÇA</h3>
+<h4>Finalidade</h4>
+<p>Manter a plataforma segura, removendo conteúdo impróprio e banindo usuários problemáticos.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Moderação de Fotos</strong></p>
+<p>- Google Cloud Vision API analisa conteúdo</p>
+<p>- Detecta nudez, violência, etc</p>
+<p>- Foto é rejeitada ou aprovada</p>
+<p>- Usuário é notificado se rejeitada</p>
+<p>2. <strong>Moderação de Mensagens</strong></p>
+<p>- Sistema detecta palavras impróprias (regex)</p>
+<p>- Análise IA de toxicidade</p>
+<p>- Mensagem é filtrada ou bloqueada</p>
+<p>- Admin é notificado se necessário</p>
+<p>3. <strong>Report e Banimento</strong></p>
+<p>- Usuário pode reportar outro</p>
+<p>- Admin analisa report</p>
+<p>- Se confirmado, conta é suspensa/banida</p>
+<p>- Todas as conversas são documentadas</p>
+<p>4. <strong>Auditoria</strong></p>
+<p>- Log de todas as ações</p>
+<p>- Histórico de moderação</p>
+<p>- Rastreamento de violações</p>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+services/
+  ├─ imageModeration.ts
+  ├─ bioValidationService.ts
+  └─ advancedModerationService.ts
+
+functions/src/moderation/
+  └─ moderateMessage.ts
+
+functions/src/auth/
+  └─ sendWelcomeEmail.ts (Template com regras)
+</code></pre>
+<hr>
+<h3>12. CONFIGURAÇÕES</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários personalizem sua experiência e gerenciem suas preferências.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Notificações</strong></p>
+<p>- Ativar/desativar por tipo</p>
+<p>- Configurar horários</p>
+<p>- Configurar canais (push, email)</p>
+<p>2. <strong>Privacidade</strong></p>
+<p>- Mostrar/esconder perfil na descoberta</p>
+<p>- Quem pode ver seu perfil</p>
+<p>- Quem pode te adicionar</p>
+<p>3. <strong>Dados</strong></p>
+<p>- Baixar dados pessoais (LGPD)</p>
+<p>- Excluir conta permanentemente</p>
+<p>- Revogar acesso a LinkedIn</p>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+app/
+  └─ settings.tsx
+
+contexts/
+  └─ AuthContext.tsx (updateDiscoverySettings)
+</code></pre>
+<hr>
+<h3>13. CORREIO DA ROÇA (Mensagens Anônimas)</h3>
+<h4>Finalidade</h4>
+<p>Permitir que usuários enviem mensagens anônimas para quem os interessa, como forma de "quebra-gelo".</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Envio</strong></p>
+<p>- Usuário clica em "Correio da Roça" no perfil</p>
+<p>- Escreve mensagem anônima</p>
+<p>- Envia</p>
+<p>- Remetente não é revelado imediatamente</p>
+<p>2. <strong>Recepção</strong></p>
+<p>- Destinatário recebe notificação de mensagem anônima</p>
+<p>- Pode aceitar ou rejeitar</p>
+<p>- Se aceitar: match é criado e identidade é revelada</p>
+<p>- Se rejeitar: mensagem é descartada</p>
+<p>3. <strong>Revelação de Identidade</strong></p>
+<p>- Se aceito: identidade é revelada imediatamente</p>
+<p>- Se não aceito após 24h: identidade é revelada automaticamente</p>
+<p>- Chat é criado apenas se aceito</p>
+<h4>Integrações</h4>
+<ul>
+<li><strong>Firestore:</strong> Armazenamento de mensagens anônimas</li>
+<ul>
+<li><strong>Cloud Functions:</strong> Revelação automática após 24h</li>
+</ul>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+firebase/
+  ├─ matchService.ts (createCorreioDaRoca)
+  └─ types.ts (CorreioDaRoca)
+</code></pre>
+<hr>
+<h3>14. ONBOARDING</h3>
+<h4>Finalidade</h4>
+<p>Guiar novos usuários através da configuração inicial, garantindo perfil completo e preferências bem definidas.</p>
+<h4>Funcionamento</h4>
+<p>1. <strong>Splash Screen</strong></p>
+<p>- Apresenta app com branding</p>
+<p>- Botões: Entrar / Criar Conta</p>
+<p>2. <strong>Fluxo de Cadastro</strong></p>
+<p>- Nome e email</p>
+<p>- Senha</p>
+<p>- Verificação de email</p>
+<p>- Termos e condições</p>
+<p>- Foto de perfil</p>
+<p>3. <strong>Fluxo de Onboarding</strong></p>
+<p>- Seleção de gênero</p>
+<p>- Seleção de orientação sexual</p>
+<p>- Seleção de objetivos (namoro, amizade, eventos, etc)</p>
+<p>- O que procura aqui</p>
+<p>- Bio pessoal</p>
+<p>- Interesse em Network</p>
+<p>- Preferências de gênero</p>
+<p>- Conclusão</p>
+<h4>Arquivos Envolvidos</h4>
+<pre><code>
+app/
+  ├─ onboarding.tsx
+  ├─ onboarding-*.tsx (Múltiplas telas)
+  ├─ signup.tsx
+  ├─ signup-*.tsx (Múltiplas telas)
+  └─ signup-verify-email.tsx
+
+contexts/
+  └─ SignupContext.tsx (Estado do fluxo)
+</code></pre>
+<hr>
+<h2>🗄️ BANCO DE DADOS FIREBASE</h2>
+<h3>Estrutura do Firestore</h3>
+<h4>1. Collection: `users`</h4>
+<p>Armazena dados de todos os usuários do aplicativo.</p>
+<pre><code>
+{
+  id: string,                    // UID Firebase Auth
+  email: string,
+  emailVerified: boolean,
+  userType: &#39;agro&#39; | &#39;simpatizante&#39; | &#39;produtor&#39;,
+  status: &#39;pending&#39; | &#39;active&#39; | &#39;suspended&#39; | &#39;deleted&#39;,
+  
+  // Perfil
+  profile: {
+    name: string,
+    birthDate: Timestamp,
+    age: number,
+    gender: &#39;male&#39; | &#39;female&#39; | &#39;non_binary&#39; | &#39;other&#39;,
+    genderPreference: &#39;male&#39; | &#39;female&#39; | &#39;all&#39;,
+    bio: string,
+    photos: string[],            // URLs em Storage
+    city: string,
+    state: string,
+    occupation: string,
+    relationshipGoals: string[],
+    isAgroUser: boolean,
+    agroAreas: string[],
+    profileCompleted: boolean,
+  },
+  
+  // Assinatura
+  subscription: {
+    status: &#39;none&#39; | &#39;trial&#39; | &#39;active&#39; | &#39;expired&#39; | &#39;cancelled&#39;,
+    plan: &#39;free&#39; | &#39;premium_monthly&#39; | &#39;premium_quarterly&#39; | &#39;premium_annual&#39;,
+    startDate: Timestamp | null,
+    endDate: Timestamp | null,
+    trialEndDate: Timestamp | null,
+    autoRenew: boolean,
+    lastPaymentId: string,
+  },
+  
+  // Network Rural
+  networkRural: {
+    isActive: boolean,
+    subscription: {
+      status: &#39;none&#39; | &#39;trial&#39; | &#39;active&#39; | &#39;expired&#39;,
+      plan: &#39;monthly&#39; | &#39;lifetime&#39;,
+      startDate: Timestamp,
+      endDate: Timestamp,
+    },
+    linkedIn: {
+      profileUrl: string,
+      currentPosition: string,
+      company: string,
+      isVerified: boolean,
+    },
+    goals: string[],
+    lookingFor: string[],
+  },
+  
+  // Descoberta
+  discoverySettings: {
+    showMe: boolean,
+    ageRange: { min: number, max: number },
+    distanceRadius: number,
+    genderInterest: &#39;men&#39; | &#39;women&#39; | &#39;both&#39;,
+    onlyVerified: boolean,
+    onlyWithPhotos: boolean,
+    selectedInterests: string[],
+    selectedProfessions: string[],
+    // ... mais filtros
+  },
+  
+  // Notificações
+  notificationSettings: {
+    pushEnabled: boolean,
+    matchNotifications: boolean,
+    messageNotifications: boolean,
+    likeNotifications: boolean,
+  },
+  fcmTokens: string[],           // Tokens para push
+  
+  // Estatísticas
+  stats: {
+    totalLikes: number,
+    totalMatches: number,
+    totalMessages: number,
+    profileViews: number,
+    superLikesReceived: number,
+  },
+  
+  // Inventário
+  inventory: {
+    superLikes: number,
+    boosts: number,
+  },
+  
+  // Timestamps
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  lastActive: Timestamp,
+}
+</code></pre>
+<h4>2. Collection: `likes`</h4>
+<p>Armazena informação de likes entre usuários.</p>
+<pre><code>
+{
+  id: string,                    // fromUserId_toUserId
+  fromUserId: string,            // Quem deu like
+  toUserId: string,              // Quem recebeu like
+  isSuperLike: boolean,
+  createdAt: Timestamp,
+  seen: boolean,
+  matchCreated: boolean,         // Virou match?
+  matchId: string,               // Se virou match
+}
+</code></pre>
+<h4>3. Collection: `matches`</h4>
+<p>Armazena matches entre usuários (quando há like mútuo).</p>
+<pre><code>
+{
+  id: string,                    // Gerado automático
+  users: [string, string],       // IDs dos 2 usuários
+  createdAt: Timestamp,
+  lastMessageAt: Timestamp | null,
+  chatId: string,                // Chat associado
+  isActive: boolean,
+  unmatchedBy: string,           // Se foi feito unmatch
+  unmatchedAt: Timestamp,
+}
+</code></pre>
+<h4>4. Collection: `chats`</h4>
+<p>Armazena conversas entre usuários.</p>
+<pre><code>
+{
+  id: string,
+  participants: [string, string],       // IDs ordenados
+  origin: &#39;match&#39; | &#39;network&#39; | &#39;correio_da_roca&#39;,
+  matchId: string,                      // Se origin = match
+  networkConnectionId: string,          // Se origin = network
+  
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  lastMessage: {
+    text: string,
+    senderId: string,
+    timestamp: Timestamp,
+    type: &#39;text&#39; | &#39;image&#39;,
+  },
+  
+  isActive: boolean,
+  messageCount: number,
+  inactivityReminders: number,
+  lastReminderAt: Timestamp,
+}
+</code></pre>
+<h4>5. Subcollection: `chats/{chatId}/messages`</h4>
+<p>Armazena mensagens individuais.</p>
+<pre><code>
+{
+  id: string,
+  chatId: string,
+  senderId: string,
+  text: string,
+  type: &#39;text&#39; | &#39;image&#39; | &#39;audio&#39; | &#39;system&#39; | &#39;misterio&#39;,
+  status: &#39;sent&#39; | &#39;delivered&#39; | &#39;read&#39;,
+  createdAt: Timestamp,
+  readAt: Timestamp,
+  
+  // Moderação
+  moderated: boolean,
+  originalText: string,          // Se foi sanitizado
+  moderationScore: number,
+  
+  // Se for mensagem mistério
+  misterio: {
+    isRevealed: boolean,
+    revealedAt: Timestamp,
+    expiresAt: Timestamp,        // 24h após envio
+    blurredPhotoUrl: string,
+    originalPhotoUrl: string,
+    senderName: string,
+  },
+}
+</code></pre>
+<h4>6. Collection: `payments`</h4>
+<p>Armazena histórico de pagamentos.</p>
+<pre><code>
+{
+  id: string,
+  userId: string,
+  
+  amount: number,                 // Em centavos
+  currency: string,               // BRL
+  description: string,
+  
+  productId: string,              // Ex: &#39;premium_monthly&#39;
+  plan: string,
+  
+  status: &#39;pending&#39; | &#39;completed&#39; | &#39;failed&#39; | &#39;refunded&#39;,
+  provider: &#39;stripe&#39; | &#39;simulated&#39;,
+  
+  stripePaymentIntentId: string,
+  
+  createdAt: Timestamp,
+  completedAt: Timestamp,
+}
+</code></pre>
+<h4>7. Collection: `notifications`</h4>
+<p>Armazena notificações para cada usuário.</p>
+<pre><code>
+{
+  id: string,
+  userId: string,
+  
+  type: &#39;match&#39; | &#39;like&#39; | &#39;super_like&#39; | &#39;message&#39; | &#39;trial_expiring&#39;,
+  title: string,
+  body: string,
+  
+  data: {
+    // Dados contextuais
+    fromUserId: string,
+    matchId: string,
+    chatId: string,
+  },
+  
+  read: boolean,
+  readAt: Timestamp,
+  
+  pushSent: boolean,
+  pushSentAt: Timestamp,
+  
+  createdAt: Timestamp,
+}
+</code></pre>
+<h4>8. Collection: `events`</h4>
+<p>Armazena eventos criados por produtores.</p>
+<pre><code>
+{
+  id: string,
+  creatorId: string,
+  title: string,
+  description: string,
+  
+  type: &#39;rodeio&#39; | &#39;exposicao&#39; | &#39;balada&#39; | &#39;encontro&#39; | &#39;feira&#39;,
+  
+  eventDate: Timestamp,
+  eventTime: string,              // HH:mm
+  
+  location: {
+    address: string,
+    city: string,
+    state: string,
+    coordinates: {
+      latitude: number,
+      longitude: number,
+    },
+  },
+  
+  imageUrl: string,               // Em Storage
+  
+  capacity: number,
+  ticketPrice: number,            // Em reais
+  
+  durationDays: number,           // 15, 30, 60, 90
+  highlightDays: number,
+  isHighlighted: boolean,
+  
+  status: &#39;active&#39; | &#39;completed&#39; | &#39;cancelled&#39;,
+  
+  views: number,
+  interested: number,
+  attendees: number,
+  
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+  expiresAt: Timestamp,           // Quando evento sai do ar
+}
+</code></pre>
+<h4>9. Collection: `network_connections`</h4>
+<p>Armazena conexões profissionais do Network Rural.</p>
+<pre><code>
+{
+  id: string,
+  users: [string, string],              // IDs ordenados
+  createdAt: Timestamp,
+  
+  chatId: string,                       // Chat automático
+  connectionType: &#39;professional&#39; | &#39;business&#39; | &#39;mentorship&#39;,
+  
+  isActive: boolean,
+}
+</code></pre>
+<h4>10. Collection: `correio_da_roca`</h4>
+<p>Armazena mensagens anônimas.</p>
+<pre><code>
+{
+  id: string,
+  fromUserId: string,             // Remetente (oculto no início)
+  toUserId: string,               // Destinatário
+  
+  message: string,
+  status: &#39;pending&#39; | &#39;accepted&#39; | &#39;rejected&#39;,
+  
+  createdAt: Timestamp,
+  respondedAt: Timestamp,
+  
+  chatId: string,                 // Criado se aceito
+  matchId: string,                // Criado se aceito
+}
+</code></pre>
+<h4>11. Collection: `email_verifications`</h4>
+<p>Armazena códigos de verificação de email.</p>
+<pre><code>
+{
+  id: string,                     // email (lowercase + trimmed)
+  email: string,
+  code: string,
+  expiresAt: Timestamp,           // 24h
+  verified: boolean,
+  verifiedAt: Timestamp,
+  attempts: number,
+  createdAt: Timestamp,
+  usedForRegistration: boolean,   // Se foi usado no cadastro
+  registeredUserId: string,
+  registeredAt: Timestamp,
+}
+</code></pre>
+<h3>Índices do Firestore</h3>
+<p>Para otimizar queries, os seguintes índices são criados:</p>
+<pre><code>
+// Users
+- users:email
+- users:userType, users:status
+- users:status
+- users:profile.city, users:profile.state
+- users:subscription.status
+
+// Likes
+- likes:toUserId, likes:createdAt (desc)
+- likes:fromUserId, likes:createdAt (desc)
+- likes:isSuperLike, likes:createdAt (desc)
+
+// Matches
+- matches:users, matches:createdAt (desc)
+- matches:createdAt (desc)
+- matches:lastMessageAt (desc)
+
+// Chats
+- chats:participants, chats:updatedAt (desc)
+- chats:createdAt (desc)
+
+// Messages
+- chats/{chatId}/messages:createdAt (desc)
+- chats/{chatId}/messages:status
+
+// Events
+- events:status, events:expiresAt
+- events:city, events:state
+- events:createdAt (desc)
+
+// Notifications
+- notifications:userId, notifications:read
+- notifications:userId, notifications:createdAt (desc)
+</code></pre>
+<hr>
+<h2>☁️ CLOUD FUNCTIONS - ENDPOINTS</h2>
+<h3>Configuração Global</h3>
+<p><strong>Região:</strong> <code>southamerica-east1</code> (São Paulo, Brasil)</p>
+<p><strong>Versão:</strong> Firebase Functions v2</p>
+<p><strong>Runtime:</strong> Node.js 20</p>
+<h3>Funções de Autenticação</h3>
+<h4>1. `sendVerificationEmail`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Autenticação:</strong> Requer usuário autenticado</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>email: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Enviar email com código de verificação</li>
+</ul>
+<h4>2. `verifyEmailCode`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>code: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Validar código de verificação e marcar email como verificado</li>
+</ul>
+<h4>3. `resendVerificationCode`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Autenticação:</strong> Requer usuário autenticado</li>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Reenviar código de verificação</li>
+</ul>
+<h4>4. `sendPasswordResetCode`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>email: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Enviar código de reset de senha</li>
+</ul>
+<h4>5. `verifyPasswordResetCode`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>email: string,</p>
+<p>code: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Validar código de reset antes de definir nova senha</li>
+</ul>
+<h4>6. `resetPassword`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>email: string,</p>
+<p>code: string,</p>
+<p>newPassword: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string,</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Alterar senha do usuário</li>
+</ul>
+<h4>7. `sendWelcomeEmail`</h4>
+<ul>
+<li><strong>Tipo:</strong> Cloud Function (após registro)</li>
+<ul>
+<li><strong>Trigger:</strong> Automático (novo documento em <code>users</code>)</li>
+<ul>
+<li><strong>Finalidade:</strong> Enviar email de boas-vindas</li>
+</ul>
+<h3>Funções de Notificação</h3>
+<h4>8. `sendMatchNotification`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>matchId: string,</p>
+<p>fromUserName: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>notificationId?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Notificar novo match</li>
+</ul>
+<h4>9. `sendLikeNotification`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>fromUserId: string,</p>
+<p>isSuperLike: boolean</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>notificationId?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Notificar novo like/super like</li>
+</ul>
+<h4>10. `sendMessageNotification`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>chatId: string,</p>
+<p>fromUserName: string,</p>
+<p>messagePreview: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>notificationId?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Notificar nova mensagem</li>
+</ul>
+<h3>Funções de Moderação</h3>
+<h4>11. `moderateMessage`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>messageId: string,</p>
+<p>chatId: string,</p>
+<p>text: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>moderated: boolean,</p>
+<p>action: 'allowed' | 'filtered' | 'blocked',</p>
+<p>originalText?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Moderação automática de conteúdo</li>
+</ul>
+<h3>Funções de Pagamento (Stripe PIX)</h3>
+<h4>12. `createPixPayment`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Autenticação:</strong> Requer usuário autenticado</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>userId: string,</p>
+<p>product: {</p>
+<p>id: string,</p>
+<p>name: string,</p>
+<p>amount: number,          // em centavos</p>
+<p>category: 'premium' | 'network' | 'store'</p>
+<p>},</p>
+<p>customerEmail?: string,</p>
+<p>customerName?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>paymentId?: string,</p>
+<p>pixCode?: string,          // Copia e cola</p>
+<p>pixQrCode?: string,        // Base64</p>
+<p>expiresAt?: string,        // ISO 8601</p>
+<p>error?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Criar pagamento PIX e retornar QR Code</li>
+</ul>
+<h4>13. `getPixPaymentStatus`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>paymentId: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'expired',</p>
+<p>paidAt?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Verificar status de um pagamento PIX</li>
+</ul>
+<h4>14. `cancelPixPayment`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Parâmetros:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>paymentId: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>message?: string</p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Cancelar pagamento PIX pendente</li>
+</ul>
+<h4>15. `getPaymentHistory`</h4>
+<ul>
+<li><strong>Tipo:</strong> Callable Function</li>
+<ul>
+<li><strong>Autenticação:</strong> Requer usuário autenticado</li>
+<ul>
+<li><strong>Resposta:</strong></li>
+</ul>
+<p>```typescript</p>
+<p>{</p>
+<p>success: boolean,</p>
+<p>payments?: Array<{</p>
+<p>id: string,</p>
+<p>amount: number,</p>
+<p>currency: string,</p>
+<p>status: string,</p>
+<p>createdAt: string,</p>
+<p>productId: string,</p>
+<p>productName: string</p>
+<p>}></p>
+<p>}</p>
+<p>```</p>
+<ul>
+<li><strong>Finalidade:</strong> Obter histórico de pagamentos do usuário</li>
+</ul>
+<h4>16. `stripeWebhook`</h4>
+<ul>
+<li><strong>Tipo:</strong> HTTP Function</li>
+<ul>
+<li><strong>Autenticação:</strong> Validação de signature Stripe</li>
+<ul>
+<li><strong>Triggers:</strong></li>
+</ul>
+<p>- <code>charge.succeeded</code> - Pagamento confirmado</p>
+<p>- <code>charge.failed</code> - Pagamento falhou</p>
+<p>- <code>charge.refunded</code> - Reembolso processado</p>
+<ul>
+<li><strong>Finalidade:</strong> Webhook para receber eventos do Stripe</li>
+</ul>
+<h3>Funções de Usuário</h3>
+<h4>17. `onUserLogin`</h4>
+<ul>
+<li><strong>Tipo:</strong> Cloud Function (trigger)</li>
+<ul>
+<li><strong>Trigger:</strong> <code>onAuthStateChanged</code> (Realtime Database)</li>
+<ul>
+<li><strong>Finalidade:</strong> Registrar login, atualizar <code>lastActive</code></li>
+</ul>
+<hr>
+<h2>🎨 FLUXOS E TELAS DO APLICATIVO</h2>
+<h3>Fluxo Geral de Navegação</h3>
+<pre><code>
+┌─────────────────────────────────────────────────────────────┐
+│                     SPLASH SCREEN                           │
+│            (Apresentação do App - 2-3 segundos)            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+         ┌───────────┴───────────┐
+         │                       │
+    ┌────▼────┐             ┌────▼─────┐
+    │ ENTRAR  │             │CRIAR CONTA│
+    └────┬────┘             └────┬──────┘
+         │                       │
+    ┌────▼───────────────────┐  ┌▼────────────────────────┐
+    │ LOGIN                  │  │ SIGNUP (Multi-step)    │
+    │ - Email                │  │ - Email                │
+    │ - Senha                │  │ - Verificação Email    │
+    │ - Recuperação senha    │  │ - Senha                │
+    └────┬───────────────────┘  │ - Termos               │
+         │                      │ - Verificação          │
+         │                      └──┬─────────────────────┘
+         │                         │
+         └──────────────┬──────────┘
+                        │
+             ┌──────────▼──────────┐
+             │   ONBOARDING        │
+             │ (Multi-step form)   │
+             │ - Gênero            │
+             │ - Objetivos         │
+             │ - Fotos             │
+             │ - Bio               │
+             │ - Preferências      │
+             └──────────────┬──────┘
+                            │
+             ┌──────────────▼──────────────┐
+             │    TABS PRINCIPAL (HOME)    │
+             │ 🔥 Descoberta              │
+             │ 💕 Matches                 │
+             │ 💬 Chat                    │
+             │ 🎪 Eventos                 │
+             │ 🌾 Network Rural           │
+             │ 👤 Perfil                  │
+             └─────────────────────────────┘
+</code></pre>
+<h3>Telas Principais</h3>
+<h4>1. **Splash Screen** (`onboarding-splash.tsx`)</h4>
+<ul>
+<li>Apresentação da marca</li>
+<ul>
+<li>Botões: Entrar / Criar Conta</li>
+<ul>
+<li>Duração: 2-3 segundos se autenticado (skip automático)</li>
+</ul>
+<h4>2. **Login** (`login.tsx`)</h4>
+<ul>
+<li>Email input</li>
+<ul>
+<li>Senha input</li>
+<ul>
+<li>Botão "Entrar"</li>
+<ul>
+<li>Link "Esqueceu a senha?"</li>
+<ul>
+<li>Link "Criar Conta"</li>
+<ul>
+<li>Validação em tempo real</li>
+</ul>
+<h4>3. **Signup - Fluxo** (múltiplas telas)</h4>
+<ul>
+<li><code>signup.tsx</code> - Nome e email</li>
+<ul>
+<li><code>signup-password.tsx</code> - Definir senha</li>
+<ul>
+<li><code>signup-verify-email.tsx</code> - Verificação de código</li>
+<ul>
+<li><code>signup-confirm.tsx</code> - Confirmação final</li>
+<ul>
+<li><code>signup-terms.tsx</code> - Aceitar termos</li>
+</ul>
+<h4>4. **Onboarding - Fluxo** (múltiplas telas)</h4>
+<ul>
+<li><code>onboarding-gender.tsx</code> - Seleção de gênero</li>
+<ul>
+<li><code>onboarding-orientation.tsx</code> - Orientação sexual</li>
+<ul>
+<li><code>onboarding-goals.tsx</code> - Objetivos de relacionamento</li>
+<ul>
+<li><code>onboarding-looking-for.tsx</code> - O que procura aqui</li>
+<ul>
+<li><code>onboarding-profile.tsx</code> - Bio e fotos</li>
+<ul>
+<li><code>onboarding-final.tsx</code> - Conclusão</li>
+</ul>
+<h4>5. **Feed de Descoberta** (`(tabs)/index.tsx`)</h4>
+<ul>
+<li>Cards deslizáveis de perfis</li>
+<ul>
+<li>Swipe direita: Like</li>
+<ul>
+<li>Swipe esquerda: Pass</li>
+<ul>
+<li>Botão Super Like (topo)</li>
+<ul>
+<li>Botão Filtros (topo)</li>
+<ul>
+<li>Infinite scroll</li>
+</ul>
+<h4>6. **Matches** (`(tabs)/matches.tsx`)</h4>
+<ul>
+<li>Lista de matches</li>
+<ul>
+<li>Avatar + nome + última mensagem</li>
+<ul>
+<li>Timestamp da última mensagem</li>
+<ul>
+<li>Indicador de mensagens não lidas</li>
+<ul>
+<li>Click abre chat individual</li>
+</ul>
+<h4>7. **Chat Individual** (`chat/[id].tsx`)</h4>
+<ul>
+<li>Cabeçalho com avatar/nome/status online</li>
+<ul>
+<li>Lista de mensagens (scroll reverso)</li>
+<ul>
+<li>Input de mensagem</li>
+<ul>
+<li>Botão enviar (ou ícone de envio)</li>
+<ul>
+<li>Indicador de digitação</li>
+<ul>
+<li>Data separadora entre dias</li>
+</ul>
+<h4>8. **Eventos** (`(tabs)/events.tsx`)</h4>
+<ul>
+<li>Lista de eventos com grid/lista view toggle</li>
+<ul>
+<li>Cards com imagem, título, data, local</li>
+<ul>
+<li>Filtro por tipo</li>
+<ul>
+<li>Busca por texto</li>
+<ul>
+<li>Pull-to-refresh</li>
+</ul>
+<h4>9. **Criar Evento** (`(tabs)/create-event.tsx`)</h4>
+<ul>
+<li>Formulário multi-step</li>
+<ul>
+<li>Upload de imagem</li>
+<ul>
+<li>Seleção de data/hora</li>
+<ul>
+<li>Coordenadas GPS</li>
+<ul>
+<li>Resumo e checkout</li>
+</ul>
+<h4>10. **Network Rural** (`(tabs)/network-rural.tsx`)</h4>
+<ul>
+<li>Lista de profissionais</li>
+<ul>
+<li>Filtros por área/profissão</li>
+<ul>
+<li>Botão conectar</li>
+<ul>
+<li>Badge LinkedIn se verificado</li>
+<ul>
+<li>Histórico de conexões</li>
+</ul>
+<h4>11. **Perfil** (`(tabs)/profile.tsx`)</h4>
+<ul>
+<li>Avatar grande (editável)</li>
+<ul>
+<li>Nome, idade, localização</li>
+<ul>
+<li>Bio (editável)</li>
+<ul>
+<li>Galeria de fotos (edit)</li>
+<ul>
+<li>Badges (Premium, Network, Verificado)</li>
+<ul>
+<li>Ações: Editar Perfil, Configurações, Sair</li>
+</ul>
+<h4>12. **Editar Perfil** (`edit-profile.tsx`)</h4>
+<ul>
+<li>Formulário com todos os campos</li>
+<ul>
+<li>Upload de fotos com reordenação</li>
+<ul>
+<li>Preview de como aparece para outros</li>
+<ul>
+<li>Salvamento automático</li>
+</ul>
+<h4>13. **Planos** (`plans.tsx`)</h4>
+<ul>
+<li>3 cards: Gratuito, Premium, Network</li>
+<ul>
+<li>Preços claros</li>
+<ul>
+<li>Botões de ação (Já tenho, Testar 3 dias, Assinar)</li>
+<ul>
+<li>Comparação de features</li>
+</ul>
+<h4>14. **Checkout Premium** (`premium-checkout.tsx`)</h4>
+<ul>
+<li>Resumo do plano</li>
+<ul>
+<li>Dados de cobrança</li>
+<ul>
+<li>QR Code PIX</li>
+<ul>
+<li>Copia e cola do código</li>
+<ul>
+<li>Botão confirmar pagamento</li>
+<ul>
+<li>Ou selecionar outro método</li>
+</ul>
+<h4>15. **Obrigado - Premium** (`premium-thank-you.tsx`)</h4>
+<ul>
+<li>Confirmação de compra</li>
+<ul>
+<li>Próximas features desbloqueadas</li>
+<ul>
+<li>Botão voltar para home</li>
+</ul>
+<h4>16. **Configurações** (`settings.tsx`)</h4>
+<ul>
+<li>Notificações</li>
+<ul>
+<li>Privacidade</li>
+<ul>
+<li>Dados e privacidade (LGPD)</li>
+<ul>
+<li>Sobre o app</li>
+<ul>
+<li>Logout</li>
+<ul>
+<li>Deletar conta</li>
+</ul>
+<h4>17. **Loja** (`(tabs)/store.tsx`)</h4>
+<ul>
+<li>Grid de produtos</li>
+<ul>
+<li>Super Likes avulsos</li>
+<ul>
+<li>Boosts (Assobios)</li>
+<ul>
+<li>Preços e botão comprar</li>
+<ul>
+<li>Histórico de compras</li>
+<ul>
+<li>Saldo atual de itens</li>
+</ul>
+<h4>18. **Detalhes de Perfil** (`profile-detail/[id].tsx`)</h4>
+<ul>
+<li>Fotos em carousel</li>
+<ul>
+<li>Nome, idade, localização, distância</li>
+<ul>
+<li>Bio e informações (conforme plano)</li>
+<ul>
+<li>Badges</li>
+<ul>
+<li>Botões: Like, Super Like, Pass, Report, Block</li>
+</ul>
+<hr>
+<h2>🧩 COMPONENTES E ATIVOS TÉCNICOS</h2>
+<h3>Componentes Base (UI)</h3>
+<h4>Componentes de Entrada</h4>
+<ul>
+<li><code>BotaInput.tsx</code> - Input de texto estilizado</li>
+<ul>
+<li><code>BotaButton.tsx</code> - Botão primário/secundário/outline</li>
+<ul>
+<li><code>BotaPickerSelect.tsx</code> - Seletor de opções</li>
+<ul>
+<li><code>BotaDatePicker.tsx</code> - Seletor de data</li>
+<ul>
+<li><code>BotaSlider.tsx</code> - Slider de intervalo (idade, distância)</li>
+</ul>
+<h4>Componentes de Exibição</h4>
+<ul>
+<li><code>ThemedText.tsx</code> - Texto com tema</li>
+<ul>
+<li><code>ThemedView.tsx</code> - View com tema</li>
+<ul>
+<li><code>Collapsible.tsx</code> - Conteúdo colapsável</li>
+<ul>
+<li><code>BotaCard.tsx</code> - Card genérico</li>
+<ul>
+<li><code>BotaBadge.tsx</code> - Badge de status</li>
+</ul>
+<h4>Componentes de Navegação</h4>
+<ul>
+<li><code>HapticTab.tsx</code> - Tab com feedback háptico</li>
+<ul>
+<li><code>ExternalLink.tsx</code> - Link para URLs externas</li>
+</ul>
+<h3>Componentes de Negócio</h3>
+<h4>Autenticação</h4>
+<ul>
+<li><code>ProfileGuard.tsx</code> - HOC para proteger rotas</li>
+<ul>
+<li><code>RestrictedProfile.tsx</code> - Renderiza perfil com restrições</li>
+</ul>
+<h4>Matches e Descoberta</h4>
+<ul>
+<li><code>MatchAnimation.tsx</code> - Animação de match encontrado</li>
+<ul>
+<li><code>SuperLikeAnimation.tsx</code> - Animação de super like</li>
+<ul>
+<li><code>ProfileCard.tsx</code> - Card de perfil no feed</li>
+</ul>
+<h4>Modal e Overlay</h4>
+<ul>
+<li><code>PremiumModal.tsx</code> - Modal de upgrade premium</li>
+<ul>
+<li><code>ConversionModal.tsx</code> - Modal de conversão (when limit reached)</li>
+<ul>
+<li><code>CompleteProfileModal.tsx</code> - Lembrete de completar perfil</li>
+<ul>
+<li><code>NetworkBadge.tsx</code> - Badge de Network Rural</li>
+</ul>
+<h4>Chat</h4>
+<ul>
+<li><code>ConversationReminderCard.tsx</code> - Card de lembrete de inatividade</li>
+</ul>
+<h4>Localização</h4>
+<ul>
+<li><code>LocationInitializer.tsx</code> - Inicializa GPS ao abrir app</li>
+</ul>
+<h4>Filtros</h4>
+<ul>
+<li><code>LockedFilter.tsx</code> - Filtro bloqueado para gratuito</li>
+</ul>
+<h3>Ícones Rurais</h3>
+<p>Componentes customizados em <code>components/rural-icons/</code>:</p>
+<ul>
+<li><code>CowIcon.tsx</code></li>
+<ul>
+<li><code>HayIcon.tsx</code></li>
+<ul>
+<li><code>HorseIcon.tsx</code></li>
+<ul>
+<li><code>CornIcon.tsx</code></li>
+<ul>
+<li><code>ChickenIcon.tsx</code></li>
+<ul>
+<li><code>PickaxeIcon.tsx</code></li>
+<ul>
+<li>E muitos outros...</li>
+</ul>
+<h3>Assets (Imagens e Fontes)</h3>
+<h4>Imagens</h4>
+<pre><code>
+assets/images/
+  ├─ icon.png (App icon)
+  ├─ splash-icon.png (Splash)
+  ├─ android-icon-*.png (Android icons)
+  ├─ favicon.png (Web)
+  ├─ logo-*.png (Logos)
+  └─ placeholder-*.png (Placeholders)
+</code></pre>
+<h4>Fontes</h4>
+<ul>
+<li><strong>Montserrat</strong> (Sans-serif regular)</li>
+<ul>
+<li><strong>Playfair Display</strong> (Serif elegante)</li>
+</ul>
+<p>Ambas as fontes são carregadas via Expo Google Fonts.</p>
+<h3>Tema e Estilização</h3>
+<h4>Sistema de Cores</h4>
+<pre><code>
+const BotaLoveColors = {
+  // Primárias (Laranja/Amarelo - Agro)
+  primary: &#39;#F9A825&#39;,          // Laranja principal
+  primaryLight: &#39;#FFD54F&#39;,     // Amarelo claro
+  primaryDark: &#39;#F57C00&#39;,      // Laranja escuro
+  
+  // Secundárias (Marrom - Couro/Terra)
+  secondary: &#39;#502914&#39;,         // Marrom escuro
+  secondaryLight: &#39;#663C23&#39;,    // Marrom médio
+  secondaryDark: &#39;#3E1F0F&#39;,     // Marrom muito escuro
+  
+  // Neutras
+  neutralLight: &#39;#FFF9E6&#39;,      // Bege muito claro
+  neutralMedium: &#39;#A9927A&#39;,     // Marrom claro
+  neutralDark: &#39;#7A5841&#39;,       // Marrom opaco
+  
+  // Texto
+  textPrimary: &#39;#1F130C&#39;,       // Marrom muito escuro
+  textSecondary: &#39;#502914&#39;,     // Marrom médio
+  textLight: &#39;#FFFFFF&#39;,         // Branco
+  
+  // Background
+  backgroundLight: &#39;#EFEFEF&#39;,   // Cinza claro
+  backgroundWhite: &#39;#FFFFFF&#39;,   // Branco puro
+  
+  // Status
+  error: &#39;#E53935&#39;,             // Vermelho
+  success: &#39;#66BB6A&#39;,           // Verde
+  warning: &#39;#FFA726&#39;,           // Laranja aviso
+  info: &#39;#42A5F5&#39;,              // Azul
+  
+  // Outros
+  border: &#39;#E0E0E0&#39;,
+  disabled: &#39;#CCCCCC&#39;,
+};
+</code></pre>
+<h4>Tipografia</h4>
+<pre><code>
+const BotaLoveTypography = {
+  // Headings
+  h1: {
+    fontFamily: &#39;PlayfairDisplay_700Bold&#39;,
+    fontSize: 32,
+    lineHeight: 40,
+    fontWeight: &#39;700&#39;,
+  },
+  h2: {
+    fontFamily: &#39;PlayfairDisplay_700Bold&#39;,
+    fontSize: 28,
+    lineHeight: 36,
+    fontWeight: &#39;700&#39;,
+  },
+  h3: {
+    fontFamily: &#39;Montserrat_700Bold&#39;,
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: &#39;700&#39;,
+  },
+  
+  // Body
+  bodyLarge: {
+    fontFamily: &#39;Montserrat_400Regular&#39;,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: &#39;400&#39;,
+  },
+  bodyRegular: {
+    fontFamily: &#39;Montserrat_400Regular&#39;,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: &#39;400&#39;,
+  },
+  
+  // Caption
+  caption: {
+    fontFamily: &#39;Montserrat_400Regular&#39;,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: &#39;400&#39;,
+  },
+};
+</code></pre>
+<h3>Estrutura de Pastas de Componentes</h3>
+<pre><code>
+components/
+  ├─ ui/
+  │   ├─ bota-button.tsx
+  │   ├─ bota-input.tsx
+  │   ├─ bota-card.tsx
+  │   ├─ collapsible.tsx
+  │   ├─ picker-select.tsx
+  │   ├─ date-picker.tsx
+  │   ├─ slider-range.tsx
+  │   └─ bota-badge.tsx
+  │
+  ├─ CompleteProfileModal.tsx
+  ├─ ConversationReminderCard.tsx
+  ├─ ConversionModal.tsx
+  ├─ external-link.tsx
+  ├─ haptic-tab.tsx
+  ├─ hello-wave.tsx
+  ├─ LocationInitializer.tsx
+  ├─ LockedFilter.tsx
+  ├─ MatchAnimation.tsx
+  ├─ NetworkBadge.tsx
+  ├─ parallax-scroll-view.tsx
+  ├─ PremiumModal.tsx
+  ├─ ProfileGuard.tsx
+  ├─ RestrictedProfile.tsx
+  ├─ SuperLikeAnimation.tsx
+  ├─ themed-text.tsx
+  ├─ themed-view.tsx
+  │
+  └─ rural-icons/
+      ├─ cow-icon.tsx
+      ├─ hay-icon.tsx
+      ├─ horse-icon.tsx
+      ├─ corn-icon.tsx
+      ├─ chicken-icon.tsx
+      ├─ pickaxe-icon.tsx
+      └─ ... (20+ ícones rurais)
+</code></pre>
+<hr>
+<h2>🛠️ STACK TECNOLÓGICO</h2>
+<h3>Versões Críticas</h3>
+<h3>Dependências de Runtime</h3>
+<pre><code>
+{
+  &quot;@expo-google-fonts/montserrat&quot;: &quot;^0.4.2&quot;,
+  &quot;@expo-google-fonts/playfair-display&quot;: &quot;^0.4.2&quot;,
+  &quot;@expo/vector-icons&quot;: &quot;^15.0.3&quot;,
+  &quot;@react-native-async-storage/async-storage&quot;: &quot;^2.2.0&quot;,
+  &quot;@react-native-community/datetimepicker&quot;: &quot;8.4.4&quot;,
+  &quot;@react-native-community/slider&quot;: &quot;5.0.1&quot;,
+  &quot;@react-native-firebase/app&quot;: &quot;^23.7.0&quot;,
+  &quot;@react-native-firebase/auth&quot;: &quot;^23.7.0&quot;,
+  &quot;@react-native-firebase/firestore&quot;: &quot;^23.7.0&quot;,
+  &quot;@react-native-firebase/messaging&quot;: &quot;^23.7.0&quot;,
+  &quot;@react-native-firebase/storage&quot;: &quot;^23.7.0&quot;,
+  &quot;@react-native-picker/picker&quot;: &quot;2.11.1&quot;,
+  &quot;@react-navigation/bottom-tabs&quot;: &quot;^7.4.0&quot;,
+  &quot;@react-navigation/native&quot;: &quot;^7.1.8&quot;,
+  &quot;date-fns&quot;: &quot;^3.6.0&quot;,
+  &quot;expo&quot;: &quot;~54.0.31&quot;,
+  &quot;expo-clipboard&quot;: &quot;^8.0.8&quot;,
+  &quot;expo-constants&quot;: &quot;~18.0.10&quot;,
+  &quot;expo-device&quot;: &quot;~8.0.10&quot;,
+  &quot;expo-font&quot;: &quot;~14.0.9&quot;,
+  &quot;expo-haptics&quot;: &quot;~15.0.8&quot;,
+  &quot;expo-image&quot;: &quot;~3.0.11&quot;,
+  &quot;expo-image-picker&quot;: &quot;~17.0.10&quot;,
+  &quot;expo-linear-gradient&quot;: &quot;~15.0.8&quot;,
+  &quot;expo-linking&quot;: &quot;~8.0.11&quot;,
+  &quot;expo-location&quot;: &quot;~19.0.8&quot;,
+  &quot;expo-notifications&quot;: &quot;~0.32.16&quot;,
+  &quot;expo-router&quot;: &quot;~6.0.21&quot;,
+  &quot;expo-splash-screen&quot;: &quot;~31.0.13&quot;,
+  &quot;expo-status-bar&quot;: &quot;~3.0.9&quot;,
+  &quot;expo-symbols&quot;: &quot;~1.0.8&quot;,
+  &quot;expo-system-ui&quot;: &quot;~6.0.9&quot;,
+  &quot;expo-updates&quot;: &quot;~29.0.16&quot;,
+  &quot;expo-web-browser&quot;: &quot;~15.0.10&quot;,
+  &quot;firebase&quot;: &quot;^12.7.0&quot;,
+  &quot;react&quot;: &quot;19.1.0&quot;,
+  &quot;react-dom&quot;: &quot;19.1.0&quot;,
+  &quot;react-icons&quot;: &quot;^5.5.0&quot;,
+  &quot;react-native&quot;: &quot;0.81.5&quot;,
+  &quot;react-native-draggable-flatlist&quot;: &quot;^4.0.3&quot;,
+  &quot;react-native-gesture-handler&quot;: &quot;~2.28.0&quot;,
+  &quot;react-native-reanimated&quot;: &quot;~4.1.1&quot;,
+  &quot;react-native-safe-area-context&quot;: &quot;~5.6.0&quot;,
+  &quot;react-native-screens&quot;: &quot;~4.16.0&quot;,
+  &quot;react-native-svg&quot;: &quot;15.12.1&quot;,
+  &quot;react-native-web&quot;: &quot;~0.21.0&quot;
+}
+</code></pre>
+<h3>Dependências de Desenvolvimento</h3>
+<pre><code>
+{
+  &quot;@types/react&quot;: &quot;~19.1.0&quot;,
+  &quot;eslint&quot;: &quot;^9.25.0&quot;,
+  &quot;eslint-config-expo&quot;: &quot;~10.0.0&quot;,
+  &quot;typescript&quot;: &quot;~5.9.2&quot;
+}
+</code></pre>
+<hr>
+<h2>🔐 SEGURANÇA E REGRAS FIRESTORE</h2>
+<h3>Arquitetura de Segurança</h3>
+<pre><code>
+┌─────────────────────────────────────────────────────────┐
+│         Firebase Authentication (Email/Password)        │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+          ┌────────────────┴────────────────┐
+          │                                 │
+     ┌────▼──────┐                    ┌────▼──────┐
+     │ Firebase  │                    │  Firestore│
+     │   Auth    │                    │  Security │
+     │           │                    │   Rules   │
+     └───────────┘                    └───────────┘
+          │                                 │
+          └────────────────┬────────────────┘
+                           │
+     ┌─────────────────────▼──────────────────────┐
+     │         Application Logic                  │
+     │    (Validação, Autorização, Auditoria)     │
+     └───────────────────────────────────────────┘
+</code></pre>
+<h3>Regras de Segurança (Firestore)</h3>
+<h4>Princípios</h4>
+<p>1. <strong>Autenticação Obrigatória:</strong> Apenas usuários autenticados podem acessar</p>
+<p>2. <strong>Autorização por Documento:</strong> Usuários só acessam dados que lhes pertencem</p>
+<p>3. <strong>Cloud Functions Protegidas:</strong> Operações críticas via admin SDK</p>
+<p>4. <strong>Auditoria:</strong> Logs de todas as ações</p>
+<h4>Regras por Collection</h4>
+<p><strong>Collection: <code>users</code></strong></p>
+<pre><code>
+// Leitura: autenticado pode ler qualquer perfil (com restrições no app)
+allow read: if isAuthenticated()
+
+// Criação: apenas o próprio usuário pode criar seu documento
+allow create: if isOwner(userId)
+
+// Atualização: próprio usuário ou admin
+allow update: if isOwner(userId) || isAdmin()
+
+// Deleção: próprio usuário ou admin
+allow delete: if isOwner(userId) || isAdmin()
+</code></pre>
+<p><strong>Collection: <code>likes</code></strong></p>
+<pre><code>
+// Leitura: apenas quem deu ou recebeu o like
+allow read: if isAuthenticated() &amp;&amp; 
+  (resource.data.fromUserId == request.auth.uid || 
+   resource.data.toUserId == request.auth.uid)
+
+// Criação: quem dá like
+allow create: if isAuthenticated() &amp;&amp; 
+  request.resource.data.fromUserId == request.auth.uid
+
+// Atualização: quem deu like
+allow update: if isAuthenticated() &amp;&amp; 
+  resource.data.fromUserId == request.auth.uid
+
+// Deleção: quem deu like
+allow delete: if isAuthenticated() &amp;&amp; 
+  resource.data.fromUserId == request.auth.uid
+</code></pre>
+<p><strong>Collection: <code>chats</code> e <code>chats/{chatId}/messages</code></strong></p>
+<pre><code>
+// Leitura: apenas participantes do chat
+allow read: if isAuthenticated() &amp;&amp; 
+  request.auth.uid in resource.data.participants
+
+// Criação: participante
+allow create: if isAuthenticated() &amp;&amp; 
+  request.auth.uid in request.resource.data.participants
+
+// Mensagens: apenas participantes podem enviar
+allow create: if isAuthenticated() &amp;&amp; 
+  request.resource.data.senderId == request.auth.uid
+
+// Deleção: apenas quem enviou a mensagem
+allow delete: if isAuthenticated() &amp;&amp; 
+  resource.data.senderId == request.auth.uid
+</code></pre>
+<p><strong>Collection: <code>payments</code></strong></p>
+<pre><code>
+// Leitura: usuário vê seus próprios, admin vê todos
+allow read: if isAuthenticated() &amp;&amp; 
+  (resource.data.userId == request.auth.uid || isAdmin())
+
+// Criação: usuário cria seu próprio
+allow create: if isAuthenticated() &amp;&amp; 
+  request.resource.data.userId == request.auth.uid
+
+// Deleção: NUNCA (manter auditoria)
+allow delete: if false
+</code></pre>
+<p><strong>Collection: <code>notifications</code></strong></p>
+<pre><code>
+// Leitura: apenas o destinatário
+allow read: if isOwner(resource.data.userId)
+
+// Criação: Cloud Functions apenas
+allow create: if false
+
+// Atualização: destinatário marca como lida
+allow update: if isOwner(resource.data.userId)
+</code></pre>
+<h3>Validações Críticas</h3>
+<p>1. <strong>Email Verification</strong></p>
+<p>- Código enviado via email</p>
+<p>- Válido por 24h</p>
+<p>- Máximo 5 tentativas</p>
+<p>2. <strong>Rate Limiting</strong></p>
+<p>- Máximo 5 likes por segundo (previne abuse)</p>
+<p>- Máximo 10 registros por IP/dia</p>
+<p>3. <strong>Conteúdo Indevido</strong></p>
+<p>- Moderação de fotos (Google Cloud Vision)</p>
+<p>- Moderação de textos (regex + IA)</p>
+<p>- Bloqueio automático se score alto</p>
+<p>4. <strong>Auditoria</strong></p>
+<p>- Log de todos os logins</p>
+<p>- Log de todas as transações</p>
+<p>- Log de ações administrativas</p>
+<hr>
+<h2>📝 CONCLUSÃO</h2>
+<p>O <strong>Bota Love App</strong> é um aplicativo mobile completo, seguro e bem arquitetado, desenvolvido com tecnologias modernas e melhores práticas de desenvolvimento. Todas as funcionalidades descritas nesta documentação foram implementadas e testadas, cumprindo integralmente os requisitos contratuais.</p>
+<h3>Funcionalidades Entregues</h3>
+<ul>
+<li>✅ Sistema completo de autenticação</li>
+<ul>
+<li>✅ Gerenciamento de perfis</li>
+<ul>
+<li>✅ Descoberta e sistema de matches</li>
+<ul>
+<li>✅ Chat em tempo real com moderação</li>
+<ul>
+<li>✅ Sistema de planos com 6 opções</li>
+<ul>
+<li>✅ Pagamentos via PIX (Stripe)</li>
+<ul>
+<li>✅ Gerenciamento de eventos</li>
+<ul>
+<li>✅ Network Rural com LinkedIn</li>
+<ul>
+<li>✅ Loja virtual</li>
+<ul>
+<li>✅ Push notifications</li>
+<ul>
+<li>✅ Moderação de conteúdo</li>
+<ul>
+<li>✅ Regras de segurança completas</li>
+</ul>
+<h3>Qualidade Técnica</h3>
+<ul>
+<li>✅ TypeScript para type safety</li>
+<ul>
+<li>✅ React Native/Expo para multiplataforma</li>
+<ul>
+<li>✅ Firebase para backend escalável</li>
+<ul>
+<li>✅ Cloud Functions serverless</li>
+<ul>
+<li>✅ Firestore com índices otimizados</li>
+<ul>
+<li>✅ Testes de segurança</li>
+<ul>
+<li>✅ Documentação completa</li>
+</ul>
+<h3>Suporte</h3>
+<p>Toda a documentação técnica está disponível em repositório, incluindo:</p>
+<ul>
+<li>Setup inicial (FIREBASE_SETUP.md)</li>
+<ul>
+<li>Integração de pagamentos (STRIPE_LINKEDIN_SETUP.md)</li>
+<ul>
+<li>Detalhes de cada módulo (MATCH_MODULE.md, etc)</li>
+<ul>
+<li>Guias de moderação e segurança</li>
+</ul>
+<hr>
+<p><strong>Data da Conclusão:</strong> Fevereiro 2026</p>
+<p><strong>Versão:</strong> 1.0.0</p>
+<p><strong>Status:</strong> Produção</p>
+
+    <div class="footer">
+        <p><strong>Bota Love App</strong> - Documentação Técnica de Validação</p>
+        <p>Versão 1.0.0 | Status: Produção</p>
+        <p>Data: 01/02/2026</p>
+    </div>
+    
+</body>
+</html>
+    

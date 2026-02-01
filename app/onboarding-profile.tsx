@@ -119,9 +119,9 @@ export default function OnboardingProfileScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Todos os tipos de usuário seguem o mesmo fluxo de cadastro
-      // A diferenciação de visão acontece no login
-      router.push('/signup-name');
+      // Redirecionar para a nova tela "O que você procura por aqui?"
+      // antes de continuar para o cadastro de nome
+      router.push('/onboarding-looking-for');
     });
   };
 
@@ -268,7 +268,7 @@ export default function OnboardingProfileScreen() {
         >
           <View style={styles.logoCircle}>
             <Image
-              source={require('@/assets/images/logotipo/logotipo.jpeg')}
+              source={require('@/assets/images/logotipo/logotipo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -305,8 +305,8 @@ export default function OnboardingProfileScreen() {
             type="agro"
             title="SOU AGRO"
             icon="leaf"
-            gradient={[BotaLoveColors.primary, '#e89b1f']}
-            description="Trabalho no campo e vivo o agronegócio"
+            gradient={['#228B22', '#2E8B2E']}
+            description="Trabalho no Campo e vivo o Agronegócio"
             badge="🌾 POPULAR"
           />
 
@@ -314,8 +314,8 @@ export default function OnboardingProfileScreen() {
             type="simpatizante"
             title="SIMPATIZANTE AGRO"
             icon="heart"
-            gradient={['#8BC34A', '#689F38']}
-            description="Admiro o agro e quero fazer parte"
+            gradient={['#8B0000', '#A52A2A']}
+            description="Admiro o Agro e quero fazer parte desta Comunidade"
           />
 
           <ProfileCard
@@ -323,7 +323,7 @@ export default function OnboardingProfileScreen() {
             title="PRODUTOR DE EVENTOS"
             icon="calendar"
             gradient={[BotaLoveColors.secondary, '#3d2614']}
-            description="Organizo eventos para a comunidade"
+            description="Organizo Eventos e quero divulgá-los"
             badge="💼 NEGÓCIOS"
           />
         </Animated.View>

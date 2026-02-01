@@ -166,8 +166,8 @@ export const PREMIUM_PROFILE_VISIBILITY: ProfileVisibility = {
 export const CONVERSION_MESSAGES: Record<ConversionTrigger['type'], ConversionTrigger> = {
   messages: {
     type: 'messages',
-    title: '💬 Continue a Conversa!',
-    message: 'Continue a conversa com o chat ilimitado, assine um Plano e destrave tudo!!!',
+    title: '💬 Chat Ilimitado!',
+    message: 'Continue a conversa com o chat Ilimitado, assine um Plano e destrave tudo!!!',
     ctaText: 'Ver Planos',
   },
   views: {
@@ -328,6 +328,40 @@ export function getOrCreateUserState(userId: string, registrationDate?: Date): U
   }
   
   return state;
+}
+
+/**
+ * Inicializa estado do usuário com data de registro do Firebase
+ */
+export function initUserFreePlanState(userId: string, registrationDate: Date): void {
+  const today = getCurrentDate();
+  
+  // Se já existe, atualizar a data de registro se necessário
+  let state = USER_FREE_PLAN_STATES.get(userId);
+  
+  if (state) {
+    // Atualizar data de registro se for diferente
+    if (state.registrationDate.getTime() !== registrationDate.getTime()) {
+      state.registrationDate = registrationDate;
+      state.currentPeriod = calculateUserPeriod(registrationDate);
+      state.daysActive = getDaysDifference(registrationDate, new Date());
+      state.monthsActive = getMonthsDifference(registrationDate, new Date());
+    }
+  } else {
+    // Criar novo estado com a data de registro correta
+    state = {
+      userId,
+      registrationDate,
+      currentPeriod: calculateUserPeriod(registrationDate),
+      daysActive: getDaysDifference(registrationDate, new Date()),
+      monthsActive: getMonthsDifference(registrationDate, new Date()),
+      dailyViewsUsed: 0,
+      dailyLikesUsed: 0,
+      lastResetDate: today,
+      messagesPerMatchUsed: new Map(),
+    };
+    USER_FREE_PLAN_STATES.set(userId, state);
+  }
 }
 
 export function getUserLimits(userId: string, registrationDate?: Date): FreePlanLimits {

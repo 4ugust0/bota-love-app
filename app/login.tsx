@@ -4,15 +4,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function LoginScreen() {
@@ -77,7 +77,7 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient
-      colors={[BotaLoveColors.neutralLight, BotaLoveColors.primaryLight, BotaLoveColors.primary]}
+      colors={['#FFFFFF', '#FFFFFF', '#FFFFFF']}
       locations={[0, 0.7, 1]}
       style={styles.container}
     >
@@ -93,7 +93,7 @@ export default function LoginScreen() {
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image
-              source={require('@/assets/images/logotipo/logotipo.jpeg')}
+              source={require('@/assets/images/logotipo/logotipo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -101,8 +101,7 @@ export default function LoginScreen() {
 
           {/* Login Card */}
           <View style={styles.card}>
-            <Text style={styles.title}>Bem-vindo de volta!</Text>
-            <Text style={styles.subtitle}>Entre para continuar</Text>
+            <Text style={styles.title}>Bem-vindo!</Text>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>E-mail</Text>
@@ -221,9 +220,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: BotaLoveColors.neutralLight,
-    borderWidth: 1,
-    borderColor: BotaLoveColors.neutralMedium,
+    backgroundColor: '#FFF8E1',
+    borderWidth: 2,
+    borderColor: '#D4AD63',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,

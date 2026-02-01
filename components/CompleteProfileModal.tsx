@@ -586,7 +586,7 @@ export default function CompleteProfileModal({
               disabled={isLoading}
             >
               <LinearGradient
-                colors={[BotaLoveColors.primary, '#E8960F']}
+                colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
                 style={styles.nextButtonGradient}
               >
                 {isLoading ? (

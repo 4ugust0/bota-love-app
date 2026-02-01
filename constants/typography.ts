@@ -142,11 +142,11 @@ export const TypographyColors = {
   lightSecondary: 'rgba(255, 255, 255, 0.85)',
   
   // Cor de destaque (interesses grandes)
-  accent: '#F4A623',
-  accentLight: '#FFD54F',
+  accent: '#D4AD63',
+  accentLight: '#E5C88A',
   
   // Cores do tema Bota Love
-  primary: '#F9A825',
+  primary: '#D4AD63',
   secondary: '#502914',
 } as const;
 

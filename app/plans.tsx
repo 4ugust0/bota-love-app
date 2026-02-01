@@ -1,37 +1,38 @@
 /**
- * 🔥 BOTA LOVE APP - Plans Screen
+ * 🔥 BOTA LOVE APP - Plans Screen (Estilo Tinder)
  * 
- * Tela de seleção de planos com pagamento via PIX (Stripe)
+ * Tela de seleção de planos com carrossel horizontal e benefícios
  * 
  * @author Bota Love Team
  */
 
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import { auth, firestore } from '@/firebase/config';
-import { checkoutPremium, checkoutNetwork, ProductData, formatPrice } from '@/firebase/stripeService';
+import { auth } from '@/firebase/config';
+import { checkoutNetwork, checkoutPremium, formatPrice, ProductData } from '@/firebase/stripeService';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { doc, serverTimestamp, Timestamp, updateDoc } from 'firebase/firestore';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    FlatList,
     Image,
-    Linking,
     Modal,
     Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.7;
+const CARD_MARGIN = 10;
 
 // =============================================================================
 // 📝 TIPOS
@@ -40,16 +41,26 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 interface Plan {
   id: string;
   name: string;
-  price: number;        // em centavos (R$ 49,90 = 4990)
+  shortName: string;
+  price: number;
   period: 'month' | 'quarter' | 'year' | 'lifetime';
   periodLabel: string;
+  pricePerMonth?: number;
   description: string;
-  features: string[];
   popular?: boolean;
   discount?: number;
   originalPrice?: number;
   color: string;
+  gradientColors: [string, string];
+}
+
+interface Benefit {
+  id: string;
+  title: string;
+  subtitle?: string;
   icon: string;
+  locked: boolean;
+  premium?: boolean;
 }
 
 // =============================================================================
@@ -59,95 +70,123 @@ interface Plan {
 const PREMIUM_PLANS: Plan[] = [
   {
     id: 'premium_monthly',
-    name: 'Premium Mensal',
-    price: 4990,  // R$ 49,90
+    name: 'Bota Love+',
+    shortName: 'Mensal',
+    price: 4990,
     period: 'month',
     periodLabel: '/mês',
     description: 'Experimente o Premium',
-    features: [
-      'Likes ilimitados',
-      'Veja quem curtiu você',
-      'Super Likes ilimitados',
-      'Boosts grátis todo mês',
-      'Sem anúncios',
-      'Filtros avançados',
-    ],
-    color: '#F9A825',
-    icon: 'star',
+    color: '#D4AD63',
+    gradientColors: ['#E5C88A', '#D4AD63'],
   },
   {
     id: 'premium_quarterly',
-    name: 'Premium Trimestral',
-    price: 11990,     // R$ 119,90
-    originalPrice: 14970, // R$ 149,70
+    name: 'Bota Love+',
+    shortName: 'Trimestral',
+    price: 11990,
+    originalPrice: 14970,
+    pricePerMonth: 3997,
     period: 'quarter',
     periodLabel: '/trimestre',
     description: 'Economize 20%',
-    features: [
-      'Tudo do plano mensal',
-      '3 meses com desconto',
-      'Badge exclusivo',
-      'Prioridade no suporte',
-    ],
     discount: 20,
     color: '#9C27B0',
-    icon: 'star-circle',
+    gradientColors: ['#BA68C8', '#9C27B0'],
   },
   {
     id: 'premium_annual',
-    name: 'Premium Anual',
-    price: 35990,     // R$ 359,90
-    originalPrice: 59880, // R$ 598,80
+    name: 'Bota Love+',
+    shortName: 'Anual',
+    price: 35990,
+    originalPrice: 59880,
+    pricePerMonth: 2999,
     period: 'year',
     periodLabel: '/ano',
     description: 'Economize 40%',
-    features: [
-      'Tudo do plano mensal',
-      '12 meses pelo preço de 7',
-      'Badge exclusivo',
-      'Prioridade no suporte',
-      'Destaque no feed',
-    ],
     popular: true,
     discount: 40,
     color: '#E91E63',
-    icon: 'diamond',
+    gradientColors: ['#F48FB1', '#E91E63'],
+  },
+];
+
+// Benefícios organizados em seções
+const BENEFITS_UPGRADE: Benefit[] = [
+  {
+    id: 'unlimited_likes',
+    title: 'Curtidas ilimitadas',
+    icon: 'heart',
+    locked: false,
+    premium: true,
+  },
+  {
+    id: 'see_likes',
+    title: 'Veja quem curtiu você',
+    subtitle: 'Saiba quem já demonstrou interesse',
+    icon: 'eye',
+    locked: true,
+  },
+  {
+    id: 'priority_likes',
+    title: 'Curtidas Prioritárias',
+    subtitle: 'Seus likes aparecem primeiro',
+    icon: 'flash',
+    locked: true,
+  },
+];
+
+const BENEFITS_EXPERIENCE: Benefit[] = [
+  {
+    id: 'rewind',
+    title: 'Use o Voltar quantas vezes quiser',
+    icon: 'refresh',
+    locked: false,
+    premium: true,
+  },
+  {
+    id: 'boost',
+    title: '1 Destaque Rural grátis por mês',
+    icon: 'rocket',
+    locked: true,
+  },
+  {
+    id: 'super_likes',
+    title: '3 Super Agro grátis por semana',
+    icon: 'star',
+    locked: true,
+  },
+  {
+    id: 'correio',
+    title: '3 Correio da Roça por semana',
+    subtitle: 'Chame atenção com uma mensagem antes de dar match',
+    icon: 'mail',
+    locked: true,
   },
 ];
 
 const NETWORK_PLANS: Plan[] = [
   {
     id: 'network_monthly',
-    name: 'Network Mensal',
-    price: 1490,  // R$ 14,90
+    name: 'Network Rural',
+    shortName: 'Mensal',
+    price: 1490,
     period: 'month',
     periodLabel: '/mês',
     description: 'Conexões do Agro',
-    features: [
-      'Acesso à comunidade Agro',
-      'Feed exclusivo',
-      'Eventos rurais',
-      'Networking do campo',
-    ],
     color: '#4CAF50',
-    icon: 'leaf',
+    gradientColors: ['#81C784', '#4CAF50'],
   },
   {
     id: 'network_lifetime',
-    name: 'Network Vitalício',
-    price: 990,   // R$ 9,90
+    name: 'Network Rural',
+    shortName: 'Vitalício',
+    price: 990,
     period: 'lifetime',
     periodLabel: 'único',
     description: 'Oferta de lançamento!',
-    features: [
-      'Tudo do plano mensal',
-      'Acesso vitalício',
-      'Badge exclusivo "Pioneiro"',
-      'Grupo VIP',
-    ],
     popular: true,
     color: '#2E7D32',
-    icon: 'tree',
+    gradientColors: ['#4CAF50', '#2E7D32'],
   },
 ];
 
@@ -158,10 +197,11 @@ const NETWORK_PLANS: Plan[] = [
 export default function PlansScreen() {
   const router = useRouter();
   const { currentUser, hasPremium, hasNetworkRural, isAgroUser } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'premium' | 'network'>('premium');
+  const flatListRef = useRef<FlatList>(null);
   
   // PIX Payment State
   const [pixCode, setPixCode] = useState<string | null>(null);
@@ -170,14 +210,14 @@ export default function PlansScreen() {
   const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const plans = activeTab === 'premium' ? PREMIUM_PLANS : NETWORK_PLANS;
+  const selectedPlan = plans[selectedPlanIndex];
   const isSubscribed = activeTab === 'premium' ? hasPremium : hasNetworkRural;
 
   // ===========================================================================
   // 💳 PAGAMENTO VIA PIX
   // ===========================================================================
 
-  const handleSelectPlan = (plan: Plan) => {
-    setSelectedPlan(plan);
+  const handleSubscribe = () => {
     setPixCode(null);
     setPixQrCode(null);
     setPixExpiresAt(null);
@@ -195,7 +235,6 @@ export default function PlansScreen() {
       const email = auth.currentUser.email || undefined;
       const name = currentUser?.profile?.name || undefined;
 
-      // Criar ProductData para enviar à Cloud Function
       const product: ProductData = {
         id: selectedPlan.id,
         name: selectedPlan.name,
@@ -207,7 +246,6 @@ export default function PlansScreen() {
         },
       };
 
-      // Criar pagamento PIX
       let result;
       if (activeTab === 'premium') {
         result = await checkoutPremium(userId, product, email, name);
@@ -216,7 +254,6 @@ export default function PlansScreen() {
       }
 
       if (result.success && result.pixCode) {
-        // Mostrar PIX no modal
         setPixCode(result.pixCode);
         setPixQrCode(result.pixQrCode || null);
         setPixExpiresAt(result.expiresAt || null);
@@ -241,7 +278,6 @@ export default function PlansScreen() {
     }
   };
 
-  // Copiar código PIX
   const copyPixCode = async () => {
     if (pixCode) {
       await Clipboard.setStringAsync(pixCode);
@@ -249,10 +285,8 @@ export default function PlansScreen() {
     }
   };
 
-  // Fechar modal e limpar estado
   const closePaymentModal = () => {
     setShowPaymentModal(false);
-    setSelectedPlan(null);
     setPixCode(null);
     setPixQrCode(null);
     setPixExpiresAt(null);
@@ -260,75 +294,83 @@ export default function PlansScreen() {
   };
 
   // ===========================================================================
-  // 🎨 RENDERIZAÇÃO
+  // 📱 CARROSSEL DE PLANOS
   // ===========================================================================
 
-  const renderPlanCard = (plan: Plan) => {
-    const isCurrentPlan = isSubscribed && selectedPlan?.id === plan.id;
+  const onScrollEnd = (e: any) => {
+    const contentOffset = e.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffset / (CARD_WIDTH + CARD_MARGIN * 2));
+    setSelectedPlanIndex(Math.max(0, Math.min(index, plans.length - 1)));
+  };
 
+  const renderPlanCard = ({ item, index }: { item: Plan; index: number }) => {
+    const isSelected = index === selectedPlanIndex;
+    
     return (
       <TouchableOpacity
-        key={plan.id}
-        style={[styles.planCard, plan.popular && styles.planCardPopular]}
-        onPress={() => handleSelectPlan(plan)}
         activeOpacity={0.9}
+        onPress={() => {
+          setSelectedPlanIndex(index);
+          flatListRef.current?.scrollToIndex({ index, animated: true });
+        }}
+        style={[
+          styles.planCard,
+          isSelected && styles.planCardSelected,
+        ]}
       >
-        {plan.popular && (
-          <View style={styles.popularBadge}>
-            <Text style={styles.popularText}>MAIS POPULAR</Text>
-          </View>
-        )}
-
-        {plan.discount && (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>-{plan.discount}%</Text>
-          </View>
-        )}
-
-        <View style={styles.planHeader}>
-          <View style={[styles.planIconContainer, { backgroundColor: plan.color }]}>
-            <MaterialCommunityIcons 
-              name={plan.icon as any} 
-              size={28} 
-              color="#FFF" 
-            />
-          </View>
-          <Text style={styles.planName}>{plan.name}</Text>
-          <Text style={styles.planDescription}>{plan.description}</Text>
-        </View>
-
-        <View style={styles.priceContainer}>
-          {plan.originalPrice && (
-            <Text style={styles.originalPrice}>
-              {formatPrice(plan.originalPrice)}
-            </Text>
-          )}
-          <View style={styles.priceRow}>
-            <Text style={styles.currency}>R$</Text>
-            <Text style={styles.price}>{Math.floor(plan.price / 100)}</Text>
-            <Text style={styles.cents}>,{String(plan.price % 100).padStart(2, '0')}</Text>
-            <Text style={styles.period}>{plan.periodLabel}</Text>
-          </View>
-        </View>
-
-        <View style={styles.featuresContainer}>
-          {plan.features.map((feature, index) => (
-            <View key={index} style={styles.featureRow}>
-              <Ionicons name="checkmark-circle" size={18} color={plan.color} />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
-
-        <TouchableOpacity
-          style={[styles.selectButton, { backgroundColor: plan.color }]}
-          onPress={() => handleSelectPlan(plan)}
+        <LinearGradient
+          colors={item.gradientColors}
+          style={styles.planCardGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.selectButtonText}>Assinar Agora</Text>
-        </TouchableOpacity>
+          {/* Badge de desconto */}
+          {item.discount && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>-{item.discount}%</Text>
+            </View>
+          )}
+          
+          {/* Nome do plano */}
+          <View style={styles.planCardContent}>
+            <Text style={styles.planCardName}>{item.name}</Text>
+            <Text style={styles.planCardPeriod}>{item.shortName}</Text>
+          </View>
+        </LinearGradient>
       </TouchableOpacity>
     );
   };
+
+  // ===========================================================================
+  // 🎁 BENEFÍCIOS
+  // ===========================================================================
+
+  const renderBenefitItem = (benefit: Benefit) => (
+    <View key={benefit.id} style={styles.benefitItem}>
+      <View style={styles.benefitIcon}>
+        {benefit.locked ? (
+          <Ionicons name="lock-closed" size={18} color="#999" />
+        ) : (
+          <Ionicons name="checkmark" size={18} color={BotaLoveColors.primary} />
+        )}
+      </View>
+      <View style={styles.benefitContent}>
+        <Text style={[
+          styles.benefitTitle,
+          benefit.locked && styles.benefitTitleLocked
+        ]}>
+          {benefit.title}
+        </Text>
+        {benefit.subtitle && (
+          <Text style={styles.benefitSubtitle}>{benefit.subtitle}</Text>
+        )}
+      </View>
+    </View>
+  );
+
+  // ===========================================================================
+  // 💳 MODAL DE PAGAMENTO
+  // ===========================================================================
 
   const renderPaymentModal = () => {
     if (!selectedPlan) return null;
@@ -355,7 +397,6 @@ export default function PlansScreen() {
           </View>
 
           <ScrollView style={styles.modalContent}>
-            {/* Se tem PIX, mostrar QR Code e código */}
             {pixCode ? (
               <View style={styles.pixContainer}>
                 {pixQrCode && (
@@ -393,10 +434,7 @@ export default function PlansScreen() {
                   Após o pagamento, seu plano será ativado automaticamente em alguns segundos.
                 </Text>
 
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={closePaymentModal}
-                >
+                <TouchableOpacity style={styles.closeButton} onPress={closePaymentModal}>
                   <Text style={styles.closeButtonText}>Fechar</Text>
                 </TouchableOpacity>
               </View>
@@ -404,75 +442,64 @@ export default function PlansScreen() {
               <>
                 {/* Resumo do Plano */}
                 <View style={styles.summaryCard}>
-                  <View style={styles.summaryHeader}>
-                    <View style={[styles.planIconContainer, { backgroundColor: selectedPlan.color }]}>
-                      <MaterialCommunityIcons
-                    name={selectedPlan.icon as any}
-                    size={24}
-                    color="#FFF"
-                  />
-                </View>
-                <View style={styles.summaryInfo}>
-                  <Text style={styles.summaryName}>{selectedPlan.name}</Text>
-                  <Text style={styles.summaryPeriod}>
-                    {selectedPlan.period === 'lifetime' ? 'Pagamento único' : `Renovação ${selectedPlan.period === 'month' ? 'mensal' : selectedPlan.period === 'quarter' ? 'trimestral' : 'anual'}`}
-                  </Text>
-                </View>
-              </View>
+                  <LinearGradient
+                    colors={selectedPlan.gradientColors}
+                    style={styles.summaryGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Text style={styles.summaryPlanName}>{selectedPlan.name}</Text>
+                    <Text style={styles.summaryPlanPeriod}>{selectedPlan.shortName}</Text>
+                  </LinearGradient>
+                  
+                  <View style={styles.summaryDetails}>
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.summaryLabel}>Plano</Text>
+                      <Text style={styles.summaryValue}>{selectedPlan.name} {selectedPlan.shortName}</Text>
+                    </View>
 
-              <View style={styles.summaryDivider} />
+                    {selectedPlan.originalPrice && (
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Desconto</Text>
+                        <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>
+                          -{selectedPlan.discount}%
+                        </Text>
+                      </View>
+                    )}
 
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Subtotal</Text>
-                <Text style={styles.summaryValue}>
-                  {formatPrice(selectedPlan.price)}
+                    <View style={styles.summaryDivider} />
+
+                    <View style={styles.summaryRow}>
+                      <Text style={styles.totalLabel}>Total</Text>
+                      <Text style={styles.totalValue}>
+                        {formatPrice(selectedPlan.price)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Método de Pagamento */}
+                <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
+                
+                <View style={styles.paymentMethod}>
+                  <View style={styles.paymentMethodIcon}>
+                    <Text style={{ fontSize: 24 }}>💳</Text>
+                  </View>
+                  <View style={styles.paymentMethodInfo}>
+                    <Text style={styles.paymentMethodName}>PIX</Text>
+                    <Text style={styles.paymentMethodDesc}>Pagamento instantâneo</Text>
+                  </View>
+                  <Ionicons name="checkmark-circle" size={24} color="#00D4AA" />
+                </View>
+
+                <View style={styles.securityInfo}>
+                  <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
+                  <Text style={styles.securityText}>Pagamento 100% seguro via PIX</Text>
+                </View>
+
+                <Text style={styles.termsText}>
+                  Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade.
                 </Text>
-              </View>
-
-              {selectedPlan.originalPrice && (
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Desconto</Text>
-                  <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>
-                    - {formatPrice(selectedPlan.originalPrice - selectedPlan.price)}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.summaryDivider} />
-
-              <View style={styles.summaryRow}>
-                <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>
-                  {formatPrice(selectedPlan.price)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Método de Pagamento - PIX */}
-            <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
-            
-            <View style={styles.paymentMethod}>
-              <View style={[styles.paymentMethodIcon, { backgroundColor: '#00D4AA20' }]}>
-                <Text style={{ fontSize: 24 }}>💳</Text>
-              </View>
-              <View style={styles.paymentMethodInfo}>
-                <Text style={styles.paymentMethodName}>PIX</Text>
-                <Text style={styles.paymentMethodDesc}>Pagamento instantâneo</Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={24} color="#00D4AA" />
-            </View>
-
-            <View style={styles.securityInfo}>
-              <Ionicons name="shield-checkmark" size={20} color="#4CAF50" />
-              <Text style={styles.securityText}>
-                Pagamento 100% seguro via PIX
-              </Text>
-            </View>
-
-            <Text style={styles.termsText}>
-              Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade.
-              {selectedPlan.period !== 'lifetime' && ' Lembre-se de renovar antes do vencimento.'}
-            </Text>
               </>
             )}
           </ScrollView>
@@ -509,81 +536,94 @@ export default function PlansScreen() {
     );
   };
 
+  // ===========================================================================
+  // 🎨 RENDERIZAÇÃO
+  // ===========================================================================
+
   return (
-    <LinearGradient colors={['#1a0a00', '#000000']} style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={28} color="#FFF" />
+        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+          <Ionicons name="close" size={28} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Escolha seu Plano</Text>
+        <Text style={styles.headerTitle}>Minha assinatura</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'premium' && styles.tabActive]}
-          onPress={() => setActiveTab('premium')}
-        >
-          <Ionicons
-            name="diamond"
-            size={20}
-            color={activeTab === 'premium' ? BotaLoveColors.primary : 'rgba(255,255,255,0.6)'}
-          />
-          <Text style={[styles.tabText, activeTab === 'premium' && styles.tabTextActive]}>
-            Premium
-          </Text>
-          {hasPremium && <View style={styles.activeDot} />}
-        </TouchableOpacity>
-
-        {isAgroUser && (
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'network' && styles.tabActive]}
-            onPress={() => setActiveTab('network')}
-          >
-            <MaterialCommunityIcons
-              name="sprout"
-              size={20}
-              color={activeTab === 'network' ? '#4CAF50' : 'rgba(255,255,255,0.6)'}
-            />
-            <Text style={[styles.tabText, activeTab === 'network' && styles.tabTextActive]}>
-              Network Rural
-            </Text>
-            {hasNetworkRural && <View style={[styles.activeDot, { backgroundColor: '#4CAF50' }]} />}
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Status atual */}
-      {isSubscribed && (
-        <View style={styles.subscribedBanner}>
-          <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
-          <Text style={styles.subscribedText}>
-            Você já tem o {activeTab === 'premium' ? 'Premium' : 'Network Rural'} ativo!
-          </Text>
-        </View>
-      )}
-
-      {/* Plans */}
-      <ScrollView
-        style={styles.content}
+      <ScrollView 
+        style={styles.content} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.plansContainer}
+        contentContainerStyle={styles.scrollContent}
       >
-        {plans.map(renderPlanCard)}
+        {/* Carrossel de Planos */}
+        <View style={styles.carouselContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={plans}
+            renderItem={renderPlanCard}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={CARD_WIDTH + CARD_MARGIN * 2}
+            decelerationRate="fast"
+            contentContainerStyle={styles.carouselContent}
+            onMomentumScrollEnd={onScrollEnd}
+          />
+          
+          {/* Indicadores de página */}
+          <View style={styles.pageIndicators}>
+            {plans.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.pageIndicator,
+                  index === selectedPlanIndex && styles.pageIndicatorActive,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
 
+        {/* Seção: Dê um upgrade nas suas curtidas */}
+        <View style={styles.benefitsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Dê um upgrade nas suas curtidas</Text>
+          </View>
+          {BENEFITS_UPGRADE.map(renderBenefitItem)}
+        </View>
+
+        {/* Seção: Melhore a sua experiência */}
+        <View style={styles.benefitsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Melhore a sua experiência</Text>
+          </View>
+          {BENEFITS_EXPERIENCE.map(renderBenefitItem)}
+        </View>
+
+        {/* Garantia */}
         <View style={styles.guaranteeCard}>
-          <Ionicons name="shield-checkmark" size={32} color="#4CAF50" />
-          <Text style={styles.guaranteeTitle}>Garantia de 7 dias</Text>
+          <Ionicons name="shield-checkmark" size={24} color="#4CAF50" />
           <Text style={styles.guaranteeText}>
-            Não ficou satisfeito? Devolveremos 100% do seu dinheiro, sem perguntas.
+            Garantia de 7 dias - Não ficou satisfeito? Devolveremos 100% do seu dinheiro.
           </Text>
         </View>
       </ScrollView>
 
+      {/* Botão de Assinar Fixo */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.subscribeButton, { backgroundColor: selectedPlan?.color || BotaLoveColors.primary }]}
+          onPress={handleSubscribe}
+        >
+          <Text style={styles.subscribeButtonText}>
+            A PARTIR DE {formatPrice(selectedPlan?.price || 0).replace('R$', 'R$').trim()}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {renderPaymentModal()}
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -594,118 +634,87 @@ export default function PlansScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: '#FFF',
   },
-  backButton: {
+  closeBtn: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFF',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 10,
-    marginBottom: 15,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    gap: 8,
-  },
-  tabActive: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  tabText: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
-  },
-  tabTextActive: {
-    color: '#FFF',
-  },
-  activeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: BotaLoveColors.primary,
-  },
-  subscribedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-    marginHorizontal: 20,
-    padding: 12,
-    borderRadius: 10,
-    gap: 10,
-    marginBottom: 15,
-  },
-  subscribedText: {
-    color: '#4CAF50',
-    fontSize: 14,
-    fontWeight: '500',
-    flex: 1,
+    color: '#333',
   },
   content: {
     flex: 1,
   },
-  plansContainer: {
-    padding: 20,
-    gap: 20,
-    paddingBottom: 40,
+  scrollContent: {
+    paddingBottom: 120,
+  },
+
+  // Carrossel
+  carouselContainer: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  carouselContent: {
+    paddingHorizontal: (SCREEN_WIDTH - CARD_WIDTH) / 2 - CARD_MARGIN,
   },
   planCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 20,
+    width: CARD_WIDTH,
+    height: 100,
+    marginHorizontal: CARD_MARGIN,
+    borderRadius: 16,
+    overflow: 'hidden',
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  planCardSelected: {
+    opacity: 1,
+    transform: [{ scale: 1 }],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     elevation: 5,
   },
-  planCardPopular: {
-    borderWidth: 2,
-    borderColor: BotaLoveColors.primary,
+  planCardGradient: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
   },
-  popularBadge: {
-    position: 'absolute',
-    top: -12,
-    left: '50%',
-    transform: [{ translateX: -50 }],
-    backgroundColor: BotaLoveColors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
+  planCardContent: {
+    flex: 1,
+    justifyContent: 'center',
   },
-  popularText: {
-    color: '#FFF',
-    fontSize: 10,
+  planCardName: {
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#FFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  planCardPeriod: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 4,
   },
   discountBadge: {
     position: 'absolute',
-    top: 15,
-    right: 15,
+    top: 10,
+    right: 10,
     backgroundColor: '#4CAF50',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -716,112 +725,120 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  planHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
+
+  // Indicadores de página
+  pageIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 8,
   },
-  planIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  pageIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#DDD',
+  },
+  pageIndicatorActive: {
+    backgroundColor: '#333',
+    width: 24,
+  },
+
+  // Benefícios
+  benefitsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  benefitIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F5F5F5',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginRight: 12,
   },
-  planName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  planDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  priceContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  originalPrice: {
-    fontSize: 16,
-    color: '#999',
-    textDecorationLine: 'line-through',
-    marginBottom: 4,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  currency: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  price: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#333',
-    lineHeight: 52,
-  },
-  cents: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  period: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-    marginLeft: 4,
-  },
-  featuresContainer: {
-    marginBottom: 20,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  featureText: {
-    fontSize: 14,
-    color: '#555',
+  benefitContent: {
     flex: 1,
   },
-  selectButton: {
+  benefitTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
+  },
+  benefitTitleLocked: {
+    color: '#999',
+  },
+  benefitSubtitle: {
+    fontSize: 13,
+    color: '#999',
+    marginTop: 2,
+    lineHeight: 18,
+  },
+
+  // Garantia
+  guaranteeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FFF4',
+    marginHorizontal: 20,
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  guaranteeText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4CAF50',
+    lineHeight: 18,
+  },
+
+  // Footer
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  subscribeButton: {
     borderRadius: 30,
     paddingVertical: 16,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  selectButtonText: {
+  subscribeButtonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  guaranteeCard: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(76, 175, 80, 0.3)',
-  },
-  guaranteeTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: 10,
-  },
-  guaranteeText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
-    textAlign: 'center',
-    marginTop: 8,
+    letterSpacing: 0.5,
   },
 
-  // Modal styles
+  // Modal
   modalContainer: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -848,36 +865,30 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: '#F9F9F9',
     borderRadius: 16,
-    padding: 20,
+    overflow: 'hidden',
     marginBottom: 24,
   },
-  summaryHeader: {
-    flexDirection: 'row',
+  summaryGradient: {
+    padding: 20,
     alignItems: 'center',
-    gap: 12,
   },
-  summaryInfo: {
-    flex: 1,
-  },
-  summaryName: {
-    fontSize: 18,
+  summaryPlanName: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFF',
   },
-  summaryPeriod: {
+  summaryPlanPeriod: {
     fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 4,
   },
-  summaryDivider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 16,
+  summaryDetails: {
+    padding: 20,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   summaryLabel: {
     fontSize: 14,
@@ -887,6 +898,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontWeight: '500',
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 12,
   },
   totalLabel: {
     fontSize: 16,
@@ -918,7 +934,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+    backgroundColor: 'rgba(0, 212, 170, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -952,7 +968,30 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  // PIX Styles
+  modalFooter: {
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    borderTopWidth: 1,
+    borderTopColor: '#EEE',
+  },
+  payButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 30,
+    paddingVertical: 18,
+    gap: 10,
+  },
+  payButtonDisabled: {
+    opacity: 0.7,
+  },
+  payButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  // PIX
   pixContainer: {
     alignItems: 'center',
     padding: 20,
@@ -1013,7 +1052,7 @@ const styles = StyleSheet.create({
   },
   pixExpires: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: '#B8944D',
     textAlign: 'center',
     marginBottom: 12,
     fontWeight: '500',
@@ -1036,27 +1075,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#666',
-  },
-  modalFooter: {
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-    borderTopWidth: 1,
-    borderTopColor: '#EEE',
-  },
-  payButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 30,
-    paddingVertical: 18,
-    gap: 10,
-  },
-  payButtonDisabled: {
-    opacity: 0.7,
-  },
-  payButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });

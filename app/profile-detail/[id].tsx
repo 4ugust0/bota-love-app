@@ -1,23 +1,25 @@
 import { BotaLoveColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { MOCK_USERS } from '@/data/mockData';
+import { likeUser } from '@/firebase/matchService';
+import { useInventoryItemByName } from '@/firebase/planSubscriptionService';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Dimensions,
+    FlatList,
+    Image,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const ICONS = {
@@ -79,8 +81,41 @@ export default function ProfileDetailScreen() {
     router.back();
   };
 
-  const handleSuperAgro = () => {
-    Alert.alert('Super Agro!', 'Voce deu Super Agro em ' + user.name);
+  const handleSuperAgro = async () => {
+    if (!currentUser?.id) {
+      Alert.alert('Erro', 'Você precisa estar logado');
+      return;
+    }
+    
+    // Verificar e consumir item Super Agro do inventário
+    const consumeResult = await useInventoryItemByName(currentUser.id, 'Super Agro', 1);
+    if (!consumeResult.success) {
+      console.log('❌ Sem Super Agro disponível:', consumeResult.error);
+      Alert.alert(
+        'Super Agro',
+        'Você não tem Super Agro disponível. Deseja comprar mais?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Comprar', onPress: () => router.push('/store') },
+        ]
+      );
+      return;
+    }
+    
+    console.log(`✅ Super Agro usado! Restante: ${consumeResult.remaining}`);
+    
+    // Registrar super like no Firebase
+    try {
+      const result = await likeUser(currentUser.id, user.id, true);
+      if (result.isMatch) {
+        Alert.alert('🎉 Match!', `Você e ${user.name} deram match!`);
+      } else {
+        Alert.alert('Super Agro! ⭐', `Você deu Super Agro em ${user.name}`);
+      }
+    } catch (error) {
+      console.error('Erro ao dar super agro:', error);
+      Alert.alert('Super Agro! ⭐', `Você deu Super Agro em ${user.name}`);
+    }
   };
 
   const handleBlock = () => {
@@ -133,7 +168,7 @@ export default function ProfileDetailScreen() {
       'Suinos': 'pig',
       'Ovinos': 'sheep',
       'Aves': 'bird',
-      'Caprinos': 'food-steak',
+      'Caprinos': 'goat',
       'Peixes': 'fish',
       'Caes': 'dog',
       'Gatos': 'cat',
@@ -142,6 +177,45 @@ export default function ProfileDetailScreen() {
       'Passaro': 'bird',
     };
     return animalIcons[animal] || 'paw';
+  };
+
+  // Ícones para atividades rurais
+  const getRuralActivityIcon = (activity: string): string => {
+    const activityIcons: { [key: string]: string } = {
+      'Agricultura': 'corn',
+      'Pecuária': 'cow',
+      'Pecuária de Corte': 'cow',
+      'Pecuária de Leite': 'cow',
+      'Pecuária Leiteira': 'cow',
+      'Clínica de Pequenos Animais': 'dog',
+      'Clínica de Grandes Animais': 'horse',
+      'Veterinária': 'paw',
+      'Avicultura': 'bird',
+      'Suinocultura': 'pig',
+      'Ovinocultura': 'sheep',
+      'Caprinocultura': 'goat',
+      'Piscicultura': 'fish',
+      'Apicultura': 'bee',
+      'Silvicultura': 'tree',
+    };
+    return activityIcons[activity] || 'tractor-variant';
+  };
+
+  // Ícones para culturas/plantio
+  const getCropIcon = (crop: string): string => {
+    const cropIcons: { [key: string]: string } = {
+      'Soja': 'sprout',
+      'Milho': 'corn',
+      'Sorgo': 'barley',
+      'Trigo': 'barley',
+      'Arroz': 'grain',
+      'Feijão': 'seed',
+      'Café': 'coffee',
+      'Cana': 'grass',
+      'Algodão': 'flower',
+      'Outros': 'leaf',
+    };
+    return cropIcons[crop] || 'sprout';
   };
 
   const renderPhotoItem = ({ item, index }: { item: string; index: number }) => (
@@ -237,7 +311,7 @@ export default function ProfileDetailScreen() {
 
         <View style={styles.sectionCard}>
           <LinearGradient
-            colors={[BotaLoveColors.primary, '#E8960F']}
+            colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.sectionHeaderGradient}
@@ -267,7 +341,7 @@ export default function ProfileDetailScreen() {
 
         <View style={styles.sectionCard}>
           <LinearGradient
-            colors={[BotaLoveColors.primary, '#E8960F']}
+            colors={[BotaLoveColors.primary, BotaLoveColors.primaryDark]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.sectionHeaderGradient}
@@ -289,7 +363,7 @@ export default function ProfileDetailScreen() {
 
             <View style={styles.infoItem}>
               <View style={[styles.infoIconCircle, { backgroundColor: '#FFF5E6' }]}>
-                <Ionicons name="resize-outline" size={18} color={BotaLoveColors.primary} />
+                <MaterialCommunityIcons name="ruler" size={18} color={BotaLoveColors.primary} />
               </View>
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoLabel}>Altura</Text>
@@ -400,7 +474,7 @@ export default function ProfileDetailScreen() {
               <View style={styles.tagsContainer}>
                 {profileData.ruralActivities.map((activity, index) => (
                   <View key={index} style={styles.ruralTag}>
-                    <MaterialCommunityIcons name="tractor-variant" size={16} color="#8B4513" />
+                    <MaterialCommunityIcons name={getRuralActivityIcon(activity) as any} size={16} color="#8B4513" />
                     <Text style={styles.ruralTagText}>{activity}</Text>
                   </View>
                 ))}
@@ -432,7 +506,7 @@ export default function ProfileDetailScreen() {
               <View style={styles.tagsContainer}>
                 {profileData.crops.map((crop, index) => (
                   <View key={index} style={styles.cropTag}>
-                    <MaterialCommunityIcons name="sprout" size={16} color="#27AE60" />
+                    <MaterialCommunityIcons name={getCropIcon(crop) as any} size={16} color="#27AE60" />
                     <Text style={styles.cropTagText}>{crop}</Text>
                   </View>
                 ))}
@@ -1215,12 +1289,12 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: '#FFF',
     borderWidth: 2,
-    borderColor: '#FF6B35',
+    borderColor: '#B8944D',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#FF6B35',
+        shadowColor: '#B8944D',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
         shadowRadius: 12,
